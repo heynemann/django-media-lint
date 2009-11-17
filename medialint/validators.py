@@ -17,16 +17,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
 import re
+import os
 from cssutils import CSSParser
 from xml.dom import SyntaxErr
 from medialint.exceptions import InvalidCSSError
-
 
 class CSSLint(object):
     def __init__(self, css=None):
         self.css = css
         self.parser = CSSParser(raiseExceptions=True)
 
+    @classmethod
+    def fetch_css(cls, path):
+        css_files = []
+        for root, dirs, files in os.walk(path):
+            for filename in files:
+                if filename.lower().endswith(".css"):
+                    css_files.append(os.path.join(root, filename))
+
+        return css_files
 
     def validate(self):
         try:
@@ -39,13 +48,10 @@ class CSSLint(object):
             char = matched.group('char').strip() or ' '
             if matched:
                 message = 'Syntax error on line %s column %s. ' \
-                    'Got the unexpected char "%s"' % (
-                        matched.group('line'),
-                        matched.group('column'),
-                        char)
+                          'Got the unexpected char "%s"' % (
+                    matched.group('line'),
+                    matched.group('column'),
+                    char
+                )
 
                 raise InvalidCSSError(message)
-            
-
-            
-                

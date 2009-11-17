@@ -16,3 +16,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
+from django.conf import settings
+from django.test import TestCase
+
+from medialint import CSSLint, InvalidCSSError
+from medialint.tests.utils import assert_raises
+
+class CSSLintFunctionalTest(TestCase):
+    def test_can_find_css_files_for_given_path(self):
+        'CSSLint.fetch_css should find css files within a given path'
+        css_files = CSSLint.fetch_css(settings.MEDIA_ROOT)
+        self.assertTrue(isinstance(css_files, list))
+        self.assertEquals(len(css_files), 1)
+        self.assertEquals(css_files[0], settings.LOCAL_FILE('media', 'css', 'invalid-css1.css'))
+
+    def test_find_and_check_css(self):
+        'CSSLint.fetch_and_check should find and check css files'
+        fname = settings.LOCAL_FILE('media', 'css', 'invalid-css1.css')
+        assert_raises(InvalidCSSError,
+                      CSSLint.check_files, settings.MEDIA_ROOT,
+                      exc_pattern=r'Syntax error on file: %s line 4 column 11. Got the unexpected char ":"' % fname)
