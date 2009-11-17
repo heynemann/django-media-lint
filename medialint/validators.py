@@ -25,7 +25,7 @@ from medialint.exceptions import InvalidCSSError
 class CSSLint(object):
     def __init__(self, css=None):
         self.css = css
-        self.parser = CSSParser(raiseExceptions=True)
+        self.parser = CSSParser(raiseExceptions=True, loglevel=100)
 
     @classmethod
     def fetch_css(cls, path):
@@ -60,15 +60,20 @@ class CSSLint(object):
         try:
             self.parser.parseString(self.css)
             return True
+        except UnicodeDecodeError, e:
+            raise InvalidCSSError(error=e)
+
         except SyntaxErr, e:
             regex = r'[[](?P<line>\d+)[:](?P<column>\d+)[:](?P<char>.+)[]]'
             match = re.compile(regex)
 
             matched = match.search(e.msg)
-            char = matched.group('char').strip() or ' '
             if matched:
+                char = matched.group('char').strip() or ' '
                 raise InvalidCSSError(
                     line=matched.group('line'),
                     column=matched.group('column'),
                     char=char
                 )
+            else:
+                raise InvalidCSSError(error=e)

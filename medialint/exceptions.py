@@ -18,10 +18,15 @@
 # Django settings for medialint_project project.
 
 class InvalidCSSError(Exception):
-    def __init__(self, line, column, char, file_name=None):
-        self.line = int(line)
-        self.column = int(column)
+    def __init__(self, line=None, column=None, char=None, file_name=None, error=None):
+        self.line = line and int(line) or 0
+        self.column = column and int(column) or 0
         self.char = char
+
+        if error:
+            super(InvalidCSSError, self).__init__(error)
+            return
+
         m = u'Syntax error on%s line %d column %d. Got the unexpected char "%s"'
         sfile = file_name and " file: %s" % file_name or ''
         msg = m % (sfile, self.line, self.column, self.char)

@@ -23,19 +23,33 @@ from optparse import make_option
 from medialint import CSSLint, InvalidCSSError
 
 
-
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--path', dest='path', default=None,
             help = "Validate css files"),
-        
+
     )
 
     def handle(self, *args, **options):
         path = options.get('path')
-        try:
-            CSSLint.check_files(path)
-            print "All css files under %s are fine :)" % path
-        except InvalidCSSError, e:
-            print e
+        if not path:
+            print "Missing the argument --path"
+            raise SystemExit(1)
 
+        print "Scanning css files under: %s" % path
+        valid_files = []
+        invalid_files = []
+        for filename in CSSLint.fetch_css(path):
+            content = open(filename).read()
+            cssl = CSSLint(content)
+            try:
+                cssl.validate()
+                valid_files.append(filename)
+            except InvalidCSSError, e:
+                invalid_files.append((filename, e))
+
+        for vfile in valid_files:
+            print "%s - OK" % vfile
+
+        for ifile, err in invalid_files:
+            print "%s - ERROR: in line %d, column %d" % (ifile, err.line, err.column)
