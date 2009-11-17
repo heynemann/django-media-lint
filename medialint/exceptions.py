@@ -16,24 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
-import types
-from django.test import TestCase
-from medialint import CSSLint, InvalidCSSError
 
-class CSSLintUnitTest(TestCase):
-    def test_can_validate(self):
-        'CSSLint() should be able to validate css string'
-        css = CSSLint()
-        assert hasattr(css, 'validate'), \
-               'Should have the attribute "validate"'
-        assert isinstance(css.validate, types.MethodType), \
-               'The attribute validate should be a method'
-
-    def test_raise_invalid_css_when_get_no_semicolon(self):
-        'CSSLint("css without semicolon at line end") should raise invalid css'
-        css_without_semicolon = """a.big {
-            color: red
-            border: 1px solid black;
-        }"""
-        css = CSSLint(css_without_semicolon)
-        self.assertRaises(css.validate, InvalidCSSError)
+class InvalidCSSError(Exception):
+    pass
