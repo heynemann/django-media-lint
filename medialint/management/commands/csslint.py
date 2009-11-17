@@ -20,7 +20,8 @@
 
 from django.core.management.base import BaseCommand
 from optparse import make_option
-from medialint import CSSLint
+from medialint import CSSLint, InvalidCSSError
+
 
 
 class Command(BaseCommand):
@@ -31,5 +32,10 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        CSSLint.check_files(options.get('path'))
+        path = options.get('path')
+        try:
+            CSSLint.check_files(path)
+            print "All css files under %s are fine :)" % path
+        except InvalidCSSError, e:
+            print e
 

@@ -55,15 +55,10 @@ class CSSLint(object):
 
         return True
 
-    def handle_ie_hacks(self, text):
-	text = re.sub(r'[*](?P<all>[^:]+[:])', '\g<all>', text)
-	text = re.sub(r'[_](?P<all>[^:]+[:])', '\g<all>', text)
-    	return text
 
     def validate(self):
         try:
-            text = self.handle_ie_hacks(self.css)
-            self.parser.parseString(text)
+            self.parser.parseString(self.css)
             return True
         except SyntaxErr, e:
             regex = r'[[](?P<line>\d+)[:](?P<column>\d+)[:](?P<char>.+)[]]'

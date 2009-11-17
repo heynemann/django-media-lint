@@ -49,37 +49,6 @@ class CSSLintUnitTest(TestCase):
         css = CSSLint(css_without_semicolon)
         assert_raises(InvalidCSSError, css.validate, exc_pattern=r'Syntax error on line 2 column 19. Got the unexpected char ":"')
 
-    def test_ie_hack_1(self):
-        'CSSLint should not complain about IE Hack with asterisk'
-
-        css_ie_hack_1 = """
-        a.iehack1 {
-            *border: 1px;
-        }"""
-        css = CSSLint(css_ie_hack_1)
-        assert css.validate() is True, 'Should validate successfully in properties'
-
-    def test_ie_hack_1_single_line(self):
-        'CSSLint should not complain about IE Hack with asterisk in properties, single line'
-
-        css_ie_hack_1 = ".iehack1 {*border:1px;} .iehack1 {*background:red;}"
-        css = CSSLint(css_ie_hack_1)
-        assert css.validate() is True, 'Should validate successfully'
-
-    def test_ie_hack_2(self):
-        'CSSLint should not complain about IE Hack with underscore in property'
-        css_ie_hack_2 = """
-        a.iehack2 {
-            _border: 1px;
-        }"""
-        css = CSSLint(css_ie_hack_2)
-        assert css.validate() is True, 'Should validate successfully'
-
-    def test_ie_hack_2_single_line(self):
-        'CSSLint should not complain about IE Hack with underscore in properties, single line'
-        css_ie_hack_2 = "a.iehack2 {_color:red;} a.iehack2 {_background:blue;}"
-        css = CSSLint(css_ie_hack_2)
-        assert css.validate() is True, 'Should validate successfully'
 
     def test_should_validate_ok(self):
         'CSSLint("a valid css") should validate successfully'
