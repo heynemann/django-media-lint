@@ -16,8 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
+from medialint.exceptions import InvalidCSSError
 
 class CSSLint(object):
+    def __init__(self, css=None):
+        self.css = css
 
     def validate(self):
-        pass
+        for line in self.css.splitlines():
+            line = line.strip()
+            if ":" in line and not line.endswith(";"):
+                raise InvalidCSSError('missing a semicolon')
+
+        return True

@@ -36,4 +36,15 @@ class CSSLintUnitTest(TestCase):
             border: 1px solid black;
         }"""
         css = CSSLint(css_without_semicolon)
-        self.assertRaises(css.validate, InvalidCSSError)
+        self.assertRaises(InvalidCSSError, css.validate)
+
+    def test_should_validate_ok(self):
+        'CSSLint("a valid css") should validate successfully'
+        css_ok = """
+            #some {
+                color: blue;
+            }
+        """
+        css = CSSLint(css_ok)
+        assert css.validate() is True, 'Should validate successfully'
+
