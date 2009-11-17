@@ -18,4 +18,6 @@
 # Django settings for medialint_project project.
 
 class CSSLint(object):
-    pass
+
+    def validate(self):
+        pass
