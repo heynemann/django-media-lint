@@ -37,6 +37,24 @@ class CSSLint(object):
 
         return css_files
 
+    @classmethod
+    def check_files(cls, path):
+        files = cls.fetch_css(path)
+        for file_name in files:
+            content = open(file_name).read()
+            css = cls(content)
+            try:
+                css.validate()
+            except InvalidCSSError, e:
+                raise InvalidCSSError(
+                    line=e.line,
+                    column=e.column,
+                    char=e.char,
+                    file_name=file_name
+                )
+            
+        return True
+
     def validate(self):
         try:
             self.parser.parseString(self.css)
@@ -47,11 +65,8 @@ class CSSLint(object):
             matched = match.search(e.msg)
             char = matched.group('char').strip() or ' '
             if matched:
-                message = 'Syntax error on line %s column %s. ' \
-                          'Got the unexpected char "%s"' % (
-                    matched.group('line'),
-                    matched.group('column'),
-                    char
+                raise InvalidCSSError(
+                    line=matched.group('line'),
+                    column=matched.group('column'),
+                    char=char
                 )
-
-                raise InvalidCSSError(message)
