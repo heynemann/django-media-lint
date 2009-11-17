@@ -53,18 +53,31 @@ class CSSLintUnitTest(TestCase):
         'CSSLint should not complain about IE Hack with asterisk'
 
         css_ie_hack_1 = """
-        *a.big {color: blue
-            border: 1px solid black;
+        a.iehack1 {
+            *border: 1px;
         }"""
+        css = CSSLint(css_ie_hack_1)
+        assert css.validate() is True, 'Should validate successfully in properties'
+
+    def test_ie_hack_1_single_line(self):
+        'CSSLint should not complain about IE Hack with asterisk in properties, single line'
+
+        css_ie_hack_1 = ".iehack1 {*border:1px;} .iehack1 {*background:red;}"
         css = CSSLint(css_ie_hack_1)
         assert css.validate() is True, 'Should validate successfully'
 
     def test_ie_hack_2(self):
-        'CSSLint should not complain about IE Hack with underscore'
+        'CSSLint should not complain about IE Hack with underscore in property'
         css_ie_hack_2 = """
-        _a.big {color: blue
-            border: 1px solid black;
+        a.iehack2 {
+            _border: 1px;
         }"""
+        css = CSSLint(css_ie_hack_2)
+        assert css.validate() is True, 'Should validate successfully'
+
+    def test_ie_hack_2_single_line(self):
+        'CSSLint should not complain about IE Hack with underscore in properties, single line'
+        css_ie_hack_2 = "a.iehack2 {_color:red;} a.iehack2 {_background:blue;}"
         css = CSSLint(css_ie_hack_2)
         assert css.validate() is True, 'Should validate successfully'
 

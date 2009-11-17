@@ -52,17 +52,23 @@ class CSSLint(object):
                     char=e.char,
                     file_name=file_name
                 )
-            
+
         return True
+
+    def handle_ie_hacks(self, text):
+	text = re.sub(r'[*](?P<all>[^:]+[:])', '\g<all>', text)
+	text = re.sub(r'[_](?P<all>[^:]+[:])', '\g<all>', text)
+    	return text
 
     def validate(self):
         try:
-            self.parser.parseString(self.css)
+            text = self.handle_ie_hacks(self.css)
+            self.parser.parseString(text)
             return True
         except SyntaxErr, e:
             regex = r'[[](?P<line>\d+)[:](?P<column>\d+)[:](?P<char>.+)[]]'
             match = re.compile(regex)
-            
+
             matched = match.search(e.msg)
             char = matched.group('char').strip() or ' '
             if matched:
