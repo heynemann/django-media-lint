@@ -10,6 +10,7 @@ Agile-friendly CSS and JS lint checker and compressor for Django
 2. Install the app within your django project by editing your `settings.py` file:
 
     INSTALLED_APPS = (
+
         'django.contrib.auth',
         'django.contrib.admin',
         'django.contrib.contenttypes',
@@ -17,4 +18,5 @@ Agile-friendly CSS and JS lint checker and compressor for Django
         'django.contrib.sites',
         ...
         'medialint',
+
     )
