@@ -16,12 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
-
-
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from optparse import make_option
 from medialint import CSSLint, InvalidCSSError
-
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -33,10 +31,17 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         path = options.get('path')
         if not path:
-            print "Missing the argument --path"
-            raise SystemExit(1)
+            path = settings.MEDIA_ROOT
+            if not path:
+                print "You did not pass the argument --path and don't " \
+                      "even have settings.MEDIA_ROOT set. The command " \
+                      "can not proceed :("
+            else:
+                print "Scanning css files under settings.MEDIA_ROOT: " \
+                      "%s" % path
+        else:
+            print "Scanning css files under: %s" % path
 
-        print "Scanning css files under: %s" % path
         valid_files = []
         invalid_files = []
         for filename in CSSLint.fetch_css(path):
