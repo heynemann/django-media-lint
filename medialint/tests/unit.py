@@ -39,7 +39,7 @@ class CSSLintUnitTest(TestCase):
         }"""
         css = CSSLint(css_without_semicolon)
 
-        assert_raises(InvalidCSSError, css.validate, exc_pattern=r'Syntax error on line 2 column 23. Got the unexpected char "@"') 
+        assert_raises(InvalidCSSError, css.validate, exc_pattern=r'Syntax error on line 2 column 23. Got the unexpected char "@"')
 
     def test_raise_invalid_css_when_get_no_semicolon(self):
         'CSSLint("css without semicolon at line end") should raise invalid css'
@@ -47,8 +47,25 @@ class CSSLintUnitTest(TestCase):
             border: 1px solid black;
         }"""
         css = CSSLint(css_without_semicolon)
-        assert_raises(InvalidCSSError, css.validate, exc_pattern=r'Syntax error on line 2 column 19. Got the unexpected char ":"') 
+        assert_raises(InvalidCSSError, css.validate, exc_pattern=r'Syntax error on line 2 column 19. Got the unexpected char ":"')
 
+    def test_ie_hack_1(self):
+        'CSSLint should not complain about IE Hack with asterisk'
+        css_without_semicolon = """
+        *a.big {color: blue
+            border: 1px solid black;
+        }"""
+        css = CSSLint(css_without_semicolon)
+        assert css.validate() is True, 'Should validate successfully'
+
+    def test_ie_hack_2(self):
+        'CSSLint should not complain about IE Hack with underscore'
+        css_without_semicolon = """
+        _a.big {color: blue
+            border: 1px solid black;
+        }"""
+        css = CSSLint(css_without_semicolon)
+        assert css.validate() is True, 'Should validate successfully'
 
     def test_should_validate_ok(self):
         'CSSLint("a valid css") should validate successfully'
