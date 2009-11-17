@@ -62,6 +62,7 @@ class CSSLint(object):
         except SyntaxErr, e:
             regex = r'[[](?P<line>\d+)[:](?P<column>\d+)[:](?P<char>.+)[]]'
             match = re.compile(regex)
+            
             matched = match.search(e.msg)
             char = matched.group('char').strip() or ' '
             if matched:
