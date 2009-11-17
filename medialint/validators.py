@@ -16,16 +16,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
+import re
+from cssutils import CSSParser
+from xml.dom import SyntaxErr
 from medialint.exceptions import InvalidCSSError
+
 
 class CSSLint(object):
     def __init__(self, css=None):
         self.css = css
+        self.parser = CSSParser(raiseExceptions=True)
+
 
     def validate(self):
-        for line in self.css.splitlines():
-            line = line.strip()
-            if ":" in line and not line.endswith(";"):
-                raise InvalidCSSError('missing a semicolon')
+        try:
+            self.parser.parseString(self.css)
+            return True
+        except SyntaxErr, e:
+            regex = r'[[](?P<line>\d+)[:](?P<column>\d+)[:](?P<char>.+)[]]'
+            match = re.compile(regex)
+            matched = match.search(e.msg)
+            char = matched.group('char').strip() or ' '
+            if matched:
+                message = 'Syntax error on line %s column %s. ' \
+                    'Got the unexpected char "%s"' % (
+                        matched.group('line'),
+                        matched.group('column'),
+                        char)
 
-        return True
+                raise InvalidCSSError(message)
+            
+
+            
+                

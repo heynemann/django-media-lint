@@ -18,7 +18,9 @@
 # Django settings for medialint_project project.
 import types
 from django.test import TestCase
+
 from medialint import CSSLint, InvalidCSSError
+from medialint.tests.utils import assert_raises
 
 class CSSLintUnitTest(TestCase):
     def test_can_validate(self):
@@ -29,14 +31,24 @@ class CSSLintUnitTest(TestCase):
         assert isinstance(css.validate, types.MethodType), \
                'The attribute validate should be a method'
 
-    def test_raise_invalid_css_when_get_no_semicolon(self):
-        'CSSLint("css without semicolon at line end") should raise invalid css'
+    def test_raise_invalid_css_with_at_instead_of_semicolon(self):
+        'CSSLint("css with a at instead of semicolon at line end") should raise invalid css'
         css_without_semicolon = """a.big {
-            color: red
+            color: red@
             border: 1px solid black;
         }"""
         css = CSSLint(css_without_semicolon)
-        self.assertRaises(InvalidCSSError, css.validate)
+
+        assert_raises(InvalidCSSError, css.validate, exc_pattern=r'Syntax error on line 2 column 23. Got the unexpected char "@"') 
+
+    def test_raise_invalid_css_when_get_no_semicolon(self):
+        'CSSLint("css without semicolon at line end") should raise invalid css'
+        css_without_semicolon = """a.big {color: blue
+            border: 1px solid black;
+        }"""
+        css = CSSLint(css_without_semicolon)
+        assert_raises(InvalidCSSError, css.validate, exc_pattern=r'Syntax error on line 2 column 19. Got the unexpected char ":"') 
+
 
     def test_should_validate_ok(self):
         'CSSLint("a valid css") should validate successfully'
