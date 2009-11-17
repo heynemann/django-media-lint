@@ -49,7 +49,6 @@ class CSSLintUnitTest(TestCase):
         css = CSSLint(css_without_semicolon)
         assert_raises(InvalidCSSError, css.validate, exc_pattern=r'Syntax error on line 2 column 19. Got the unexpected char ":"') 
 
-
     def test_should_validate_ok(self):
         'CSSLint("a valid css") should validate successfully'
         css_ok = """
@@ -59,4 +58,11 @@ class CSSLintUnitTest(TestCase):
         """
         css = CSSLint(css_ok)
         assert css.validate() is True, 'Should validate successfully'
+
+class CSSLintExceptionUnitTest(TestCase):
+    def test_construction(self):
+        exc = InvalidCSSError(line=2, column=10, char="$")
+        self.assertEquals(exc.line, 2)
+        self.assertEquals(exc.column, 10)
+        self.assertEquals(exc.char, "$")
 
