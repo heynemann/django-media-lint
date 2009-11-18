@@ -45,9 +45,10 @@ class CSSLintFunctionalTest(TestCase):
         'CSSLint.fetch_css should find css files within a given path'
         css_files = CSSLint.fetch_css(LOCAL_FILE('media'))
         self.assertTrue(isinstance(css_files, list))
-        self.assertEquals(len(css_files), 2)
+        self.assertEquals(len(css_files), 3)
         self.assertEquals(css_files[0], LOCAL_FILE('media', 'css', 'invalid-css1.css'))
         self.assertEquals(css_files[1], LOCAL_FILE('media', 'css', 'valid', 'valid-css1.css'))
+        self.assertEquals(css_files[2], LOCAL_FILE('media', 'css', 'hacks', 'valid-css1-with-hacks.css'))
 
     def test_find_and_check_css_error(self):
         'CSSLint.fetch_and_check should find and check css files'
@@ -62,4 +63,4 @@ class CSSLintFunctionalTest(TestCase):
     
     def test_find_and_check_css_error_ignoring_hacks(self):
         'CSSLint.fetch_and_check should find and check css files ignoring css hacks'
-        assert CSSLint.check_files(LOCAL_FILE('media','css', 'hacks')) is True, 'Should check successfully'
+        assert CSSLint().check_files(LOCAL_FILE('media','css', 'hacks'), ignore_hacks=True) is True, 'Should check successfully'

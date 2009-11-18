@@ -25,13 +25,15 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--path', dest='path', default=None,
             help = "Validate css files"),
-        make_option('--ignore-hacks', dest='ignore-hacks', default=None,
+        make_option('--ignore-hacks', dest='ignore-hacks', default=False,
             help = "Ignore Css Hacks"),
 
     )
 
     def handle(self, *args, **options):
         path = options.get('path')
+        ignore_hacks = options.get('ignore-hacks')
+
         if not path:
             path = settings.MEDIA_ROOT
             if not path:
@@ -43,14 +45,13 @@ class Command(BaseCommand):
                       "%s" % path
         else:
             print "Scanning css files under: %s" % path
-
         valid_files = []
         invalid_files = []
         for filename in CSSLint.fetch_css(path):
             content = open(filename).read()
             cssl = CSSLint(content)
             try:
-                cssl.validate()
+                cssl.validate(ignore_hacks=ignore_hacks)
                 valid_files.append(filename)
             except InvalidCSSError, e:
                 invalid_files.append((filename, e))
