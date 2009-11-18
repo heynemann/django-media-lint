@@ -15,16 +15,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# Django settings for medialint_project project.
+
 import types
 from django.test import TestCase
 from mox import Mox
 
 from medialint import CSSLint, InvalidCSSError, CSSCompressor
-from medialint.templatetags.medialint import CSSJoiner
+from medialint.templatetags.medialint_tags import CSSJoiner
 from medialint.tests.utils import assert_raises
+from medialint.signals import css_joined
 
 class CSSJoinTemplateTagUnitTest(TestCase):
+
     def test_can_find_css_paths(self):
         "CSSJoin should make a lint check before compressing..."
         links = '''

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # <Django Media Lint - CSS and JS lint checker for django>
 # Copyright (C) <2009>  Gabriel Falcão <gabriel@nacaolivre.org>
-# Copyright (C) <2009>  Benitez Moretti Coelho <benitezmc@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,13 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from lxml import html as lhtml
-
-class CSSJoiner(object):
-    def __init__(self, content):
-        self.content = content
-        self.html = lhtml.fromstring(content)
-        self.links = []
-        for link in self.html.cssselect('link'):
-            self.links.append(link.attrib['href'])
-
+from django import dispatch
+css_joined = dispatch.Signal(
+    providing_args=['css_name', 'css_files', 'context']
+)

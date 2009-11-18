@@ -15,30 +15,65 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# Django settings for medialint_project project.
+
 from os.path import dirname, abspath, join
 from django.test import TestCase
-from django.template import Template, Context
-
+from django.template import Template, RequestContext, TemplateSyntaxError
+from medialint.signals import css_joined
 from medialint import CSSLint, InvalidCSSError
 from medialint.tests.utils import assert_raises
 
 LOCAL_FILE = lambda *x: join(abspath(dirname(__file__)), *x)
 
 class CSSJoinerTemplateTagFunctionalTest(TestCase):
-    def _test_rendering_css_joiner_simple_case(self):
-        t = Template('''{% load medialint %}
-            {% cssjoin "grid-stuff.css" %}
+    def test_rendering_css_joiner_simple_case(self):
+        t = Template('''{% load medialint_tags %}
+            {% cssjoin "/media/css/grid-stuff.css" %}
                 <link rel="stylesheet" href="/media/css/reset.css" />
                 <link rel="stylesheet" href="/media/css/text.css" />
                 <link rel="stylesheet" href="/media/css/960.css" />
                 <link rel="stylesheet" href="/media/css/main.css" />
             {% endcssjoin %}
         ''')
+        c = RequestContext({})
         got = t.render(c).strip()
         expected = '''<link rel="stylesheet" href="/media/css/grid-stuff.css" />'''
-        c = Context({})
+
         self.assertEquals(got, expected)
+
+    def test_send_signal_before_rendering(self):
+        self._signal_has_been_called = False
+        def on_render(sender, **kw):
+            self.assertEquals(kw['css_name'], '/some/path/grid-stuff.css')
+            self.assertEquals(
+                kw['css_files'],
+                ['/media/foo.css', '/media/css/bar.css']
+            )
+            self._signal_has_been_called = True
+
+        t = Template('''{% load medialint_tags %}
+            {% cssjoin "/some/path/grid-stuff.css" %}
+                <link rel="stylesheet" href="/media/foo.css" />
+                <link rel="stylesheet" href="/mediacssbar.css" />
+            {% endcssjoin %}
+        ''')
+        c = RequestContext({})
+        css_joined.connect(on_render)
+        t.render(c)
+
+        assert self._signal_has_been_called
+
+    def test_rendering_css_fail_when_http_in_link(self):
+        t = Template('''{% load medialint_tags %}
+            {% cssjoin "/media/css/should-fail-http.css" %}
+                <link rel="stylesheet" href="/media/css/text.css" />
+                <link rel="stylesheet" href="http://globo.com/media/css/reset.css" />
+            {% endcssjoin %}
+        ''')
+        c = RequestContext({})
+        assert_raises(TemplateSyntaxError, t.render, c,
+                      exc_pattern=r'Links under cssjoin templatetag can' \
+                      ' not have full URL [(]starting with http[)]')
 
 class CSSLintFunctionalTest(TestCase):
     def test_can_find_css_files_for_given_path(self):
