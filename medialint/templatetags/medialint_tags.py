@@ -36,6 +36,7 @@ class CSSJoiner(object):
 class CSSJoinNode(template.Node):
     http_error = 'Links under cssjoin templatetag can not have full ' \
                  'URL (starting with http)'
+
     def __init__(self, nodelist, css_name):
         self.nodelist = nodelist
         self.css_name = template.Variable(css_name)

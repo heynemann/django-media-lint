@@ -54,7 +54,7 @@ class CSSJoinerTemplateTagFunctionalTest(TestCase):
         t = Template('''{% load medialint_tags %}
             {% cssjoin "/some/path/grid-stuff.css" %}
                 <link rel="stylesheet" href="/media/foo.css" />
-                <link rel="stylesheet" href="/mediacssbar.css" />
+                <link rel="stylesheet" href="/media/css/bar.css" />
             {% endcssjoin %}
         ''')
         c = RequestContext({})
@@ -82,8 +82,8 @@ class CSSLintFunctionalTest(TestCase):
         self.assertTrue(isinstance(css_files, list))
         self.assertEquals(len(css_files), 3)
         self.assertEquals(css_files[0], LOCAL_FILE('media', 'css', 'invalid-css1.css'))
-        self.assertEquals(css_files[1], LOCAL_FILE('media', 'css', 'valid', 'valid-css1.css'))
-        self.assertEquals(css_files[2], LOCAL_FILE('media', 'css', 'hacks', 'valid-css1-with-hacks.css'))
+        self.assertEquals(css_files[2], LOCAL_FILE('media', 'css', 'valid', 'valid-css1.css'))
+        self.assertEquals(css_files[1], LOCAL_FILE('media', 'css', 'hacks', 'valid-css1-with-hacks.css'))
 
     def test_find_and_check_css_error(self):
         'CSSLint.fetch_and_check should find and check css files'

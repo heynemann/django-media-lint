@@ -66,7 +66,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'medialint_project.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATE_DIRS = (
     LOCAL_FILE('templates'),
