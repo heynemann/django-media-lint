@@ -49,6 +49,10 @@ class CSSJoinerTemplateTagFunctionalTest(TestCase):
                 kw['css_files'],
                 ['/media/foo.css', '/media/css/bar.css']
             )
+            self.assertEquals(
+                kw['joined_content'],
+                "#foo{}#bar{}"
+            )
             self._signal_has_been_called = True
 
         t = Template('''{% load medialint_tags %}
@@ -74,6 +78,17 @@ class CSSJoinerTemplateTagFunctionalTest(TestCase):
         assert_raises(TemplateSyntaxError, t.render, c,
                       exc_pattern=r'Links under cssjoin templatetag can' \
                       ' not have full URL [(]starting with http[)]')
+
+    def test_rendering_css_fail_when_file_does_not_exist(self):
+        t = Template('''{% load medialint_tags %}
+            {% cssjoin "/media/css/should-fail-http.css" %}
+                <link rel="stylesheet" href="/media/css/text.css" />
+                <link rel="stylesheet" href="gluglu.css" />
+            {% endcssjoin %}
+        ''')
+        c = RequestContext({})
+        assert_raises(TemplateSyntaxError, t.render, c,
+                      exc_pattern=r'The file "gluglu.css" does not exist.')
 
 class CSSLintFunctionalTest(TestCase):
     def test_can_find_css_files_for_given_path(self):

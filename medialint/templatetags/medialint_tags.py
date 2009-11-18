@@ -37,6 +37,8 @@ class CSSJoinNode(template.Node):
     http_error = 'Links under cssjoin templatetag can not have full ' \
                  'URL (starting with http)'
 
+    file_404 = 'The file "%s" does not exist.'
+
     def __init__(self, nodelist, css_name):
         self.nodelist = nodelist
         self.css_name = template.Variable(css_name)
@@ -57,12 +59,13 @@ class CSSJoinNode(template.Node):
             try:
                 view, args, kwargs = resolve(link)
             except Resolver404, e:
-                raise template.TemplateSyntaxError(self.http_error)
+                raise template.TemplateSyntaxError(self.file_404 % link) 
             content = view(request=HttpRequest(), *args, **kwargs)
-            content_list.append(content)
+            content_list.append(content.content.strip())
 
         css_joined.send(sender=self,
                         css_name=css_name,
+                        joined_content="".join(content_list),
                         css_files = css_list[:],
                         context=context)
 
