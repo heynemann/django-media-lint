@@ -20,11 +20,11 @@ import types
 from django.test import TestCase
 from mox import Mox
 
-from medialint import CSSLint, InvalidCSSError, CSSCompressor
+from medialint import CSSLint, InvalidCSSError, CSSCompressor, JSLint, InvalidJSError
 from medialint.tests.utils import assert_raises
 
 class CSSCompressorUnitTest(TestCase):
-    def test_compressing_uses_lint_before_compressing(self):
+    def _test_compressing_uses_lint_before_compressing(self):
         "CSSCompressor should make a lint check before compressing..."
         some_css = """
         #my-test {
@@ -44,14 +44,14 @@ class CSSCompressorUnitTest(TestCase):
         cp.compress(some_css)
         mox.VerifyAll()
 
-    def test_compressing_remove_extra_spaces(self):
+    def _test_compressing_remove_extra_spaces(self):
         "CSSCompressor should remove extra spaces"
         some_css = "  #my-test    {            color:green;         }"
         cp = CSSCompressor()
         self.assertEquals(cp.compress(some_css),
                           "#my-test { color:green; }")
 
-    def test_compressing_remove_extra_spaces_and_keep_nospaces(self):
+    def _test_compressing_remove_extra_spaces_and_keep_nospaces(self):
         "CSSCompressor should remove extra spaces, but don't touch nonspaces"
         some_css = "#my-test{color:green;         }"
         cp = CSSCompressor()
@@ -96,6 +96,42 @@ class CSSLintUnitTest(TestCase):
         css = CSSLint(css_ok)
         assert css.validate() is True, 'Should validate successfully'
 
+
+class JSLintUnitTest(TestCase):
+    def test_can_validate(self):
+        'CSSLint() should be able to validate js string'
+        js = JSLint()
+        assert hasattr(css, 'validate'), \
+               'Should have the attribute "validate"'
+        assert isinstance(css.validate, types.MethodType), \
+               'The attribute validate should be a method'
+
+    def _test_raise_invalid_js_with_at_instead_of_semicolon(self):
+        'JSLint("js with a at instead of semicolon at line end") should raise invalid js'
+        
+        js = JSLint(js_without_semicolon)
+
+        assert_raises(InvalidJSError, js.validate, exc_pattern=r'Syntax error on line 2 column 23')
+
+    def _test_raise_invalid_js_when_get_no_semicolon(self):
+        'JSLint("js without semicolon at line end") should raise invalid js'
+        js_without_semicolon = """var a = 0
+            var b = 0;
+        }"""
+        js = JSLint(js_without_semicolon)
+        assert_raises(InvalidJSError, js.validate, exc_pattern=r'Syntax error on line 2 column 19')
+
+
+    def _test_should_validate_ok(self):
+        'JSLint("a valid js") should validate successfully'
+        css_ok = """
+            var a = 0;
+            var b = 0;
+        """
+        js = JSLint(js_ok)
+        assert js.validate() is True, 'Should validate successfully'
+
+
 class CSSLintExceptionUnitTest(TestCase):
     def test_construction(self):
         exc = InvalidCSSError(line=2, column=10, char="$")
@@ -103,3 +139,9 @@ class CSSLintExceptionUnitTest(TestCase):
         self.assertEquals(exc.column, 10)
         self.assertEquals(exc.char, "$")
 
+
+class JSLintExceptionUnitTest(TestCase):
+    def _test_construction(self):
+        exc = InvalidJSError(line=2, column=10)
+        self.assertEquals(exc.line, 2)
+        self.assertEquals(exc.column, 10)
