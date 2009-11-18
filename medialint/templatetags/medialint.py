@@ -16,22 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-from medialint.validators import CSSLint
+from lxml import html as lhtml
 
-class CSSCompressor(object):
-    def __init__(self, lintian=CSSLint):
-        self.lintian = lintian
-
-    def compress(self, css):
-        lint = self.lintian(css)
-        if lint.validate():
-            css = "".join([c.strip() for c in css.splitlines()])
-            css = re.sub(r'\s+', ' ', css)
-            css = re.sub(r'\s*[{]', '{', css)
-            css = re.sub(r'[{]\s*', '{', css)
-            css = re.sub(r'\s*[}]', '}', css)
-            css = re.sub(r'(?P<contents>[{].*[:].*)\s*[;]\s*[}]', '\g<contents>}', css)
-            css = css.strip()
-        return css
+class CSSJoiner(object):
+    def __init__(self, content):
+        self.content = content
+        self.html = lhtml.fromstring(content)
+        self.links = []
+        for link in self.html.cssselect('link'):
+            self.links.append(link.attrib['href'])
 

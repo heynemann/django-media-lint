@@ -1,0 +1,74 @@
+# -*- coding: utf-8 -*-
+# <Django Media Lint - CSS and JS lint checker for django>
+# Copyright (C) <2009>  Gabriel Falcão <gabriel@nacaolivre.org>
+# Copyright (C) <2009>  Benitez Moretti Coelho <benitezmc@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from lxml import html as lhtml
+
+class CSSJoiner(object):
+    def __init__(self, content):
+        self.content = content
+        self.html = lhtml.fromstring(content)
+        self.links = []
+        for link in self.html.cssselect('link'):
+            self.links.append(link.attrib['href'])
+
+class IfNode(Node):
+    def __init__(self, bool_exprs, nodelist_true, nodelist_false, link_type):
+        self.bool_exprs = bool_exprs
+        self.nodelist_true, self.nodelist_false = nodelist_true, nodelist_false
+        self.link_type = link_type
+
+    def __repr__(self):
+        return "<If node>"
+
+    def __iter__(self):
+        for node in self.nodelist_true:
+            yield node
+        for node in self.nodelist_false:
+            yield node
+
+    def get_nodes_by_type(self, nodetype):
+        nodes = []
+        if isinstance(self, nodetype):
+            nodes.append(self)
+        nodes.extend(self.nodelist_true.get_nodes_by_type(nodetype))
+        nodes.extend(self.nodelist_false.get_nodes_by_type(nodetype))
+        return nodes
+
+    def render(self, context):
+        if self.link_type == IfNode.LinkTypes.or_:
+            for ifnot, bool_expr in self.bool_exprs:
+                try:
+                    value = bool_expr.resolve(context, True)
+                except VariableDoesNotExist:
+                    value = None
+                if (value and not ifnot) or (ifnot and not value):
+                    return self.nodelist_true.render(context)
+            return self.nodelist_false.render(context)
+        else:
+            for ifnot, bool_expr in self.bool_exprs:
+                try:
+                    value = bool_expr.resolve(context, True)
+                except VariableDoesNotExist:
+                    value = None
+                if not ((value and not ifnot) or (ifnot and not value)):
+                    return self.nodelist_false.render(context)
+            return self.nodelist_true.render(context)
+
+    class LinkTypes:
+        and_ = 0,
+        or_ = 1

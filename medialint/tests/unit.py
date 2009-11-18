@@ -21,7 +21,28 @@ from django.test import TestCase
 from mox import Mox
 
 from medialint import CSSLint, InvalidCSSError, CSSCompressor
+from medialint.templatetags.medialint import CSSJoiner
 from medialint.tests.utils import assert_raises
+
+class CSSJoinTemplateTagUnitTest(TestCase):
+    def test_can_find_css_paths(self):
+        "CSSJoin should make a lint check before compressing..."
+        links = '''
+            <link rel="stylesheet" href="/media/css/reset.css" />
+            <link rel="stylesheet" href="/media/css/text.css" />
+            <link rel="stylesheet" href="/media/css/960.css" />
+            <link rel="stylesheet" href="/media/css/main.css" />
+        '''
+        cj = CSSJoiner(links)
+        self.assertEquals(
+            cj.links,
+            [
+                "/media/css/reset.css",
+                "/media/css/text.css",
+                "/media/css/960.css",
+                "/media/css/main.css",
+            ]
+        )
 
 class CSSCompressorUnitTest(TestCase):
     def test_compressing_uses_lint_before_compressing(self):
