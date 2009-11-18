@@ -21,7 +21,7 @@ from django.http import HttpRequest
 from django.core.urlresolvers import resolve, Resolver404
 from lxml import html as lhtml
 
-from medialint.signals import css_joined
+from medialint.signals import css_joined, js_joined
 
 register = template.Library()
 
@@ -32,6 +32,14 @@ class CSSJoiner(object):
         self.links = []
         for link in self.html.cssselect('link'):
             self.links.append(link.attrib['href'])
+
+class JSJoiner(object):
+    def __init__(self, content):
+        self.content = content
+        self.html = lhtml.fromstring(content)
+        self.links = []
+        for link in self.html.cssselect('script'):
+            self.links.append(link.attrib['src'])
 
 class CSSJoinNode(template.Node):
     http_error = 'Links under cssjoin templatetag can not have full ' \
@@ -59,7 +67,7 @@ class CSSJoinNode(template.Node):
             try:
                 view, args, kwargs = resolve(link)
             except Resolver404, e:
-                raise template.TemplateSyntaxError(self.file_404 % link) 
+                raise template.TemplateSyntaxError(self.file_404 % link)
             content = view(request=HttpRequest(), *args, **kwargs)
             content_list.append(content.content.strip())
 
@@ -78,4 +86,50 @@ def do_cssjoin(parser, token):
     parser.delete_first_token()
     return CSSJoinNode(nodelist, css_name)
 
+class JSJoinNode(template.Node):
+    http_error = 'Links under jsjoin templatetag can not have full ' \
+                 'URL (starting with http)'
+
+    file_404 = 'The file "%s" does not exist.'
+
+    def __init__(self, nodelist, js_name):
+        self.nodelist = nodelist
+        self.js_name = template.Variable(js_name)
+
+    def __repr__(self):
+        return "<JSJoinNode>"
+
+    def render(self, context):
+        html = "".join([x.render(context) for x in self.nodelist])
+        joiner = JSJoiner(html)
+        js_list = []
+        content_list = []
+        js_name = self.js_name.resolve(context)
+        for link in joiner.links:
+            if link.startswith("http://"):
+                raise template.TemplateSyntaxError(self.http_error)
+            js_list.append(link)
+            try:
+                view, args, kwargs = resolve(link)
+            except Resolver404, e:
+                raise template.TemplateSyntaxError(self.file_404 % link)
+            content = view(request=HttpRequest(), *args, **kwargs)
+            content_list.append(content.content.strip())
+
+        js_joined.send(sender=self,
+                       js_name=js_name,
+                       joined_content="".join(content_list),
+                       js_files = js_list[:],
+                       context=context)
+
+        return '<script type="text/javascript" src="%s" />' % js_name
+
+def do_jsjoin(parser, token):
+    bits = token.split_contents()
+    js_name = bits[1]
+    nodelist = parser.parse(('endjsjoin',))
+    parser.delete_first_token()
+    return JSJoinNode(nodelist, js_name)
+
 register.tag("cssjoin", do_cssjoin)
+register.tag("jsjoin", do_jsjoin)

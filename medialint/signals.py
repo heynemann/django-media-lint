@@ -19,3 +19,6 @@ from django import dispatch
 css_joined = dispatch.Signal(
     providing_args=['css_name', 'css_files', 'joined_content', 'context']
 )
+js_joined = dispatch.Signal(
+    providing_args=['js_name', 'js_files', 'joined_content', 'context']
+)

@@ -22,13 +22,11 @@ from mox import Mox
 
 from medialint import CSSLint, InvalidCSSError, CSSCompressor
 from medialint.templatetags.medialint_tags import CSSJoiner
+from medialint.templatetags.medialint_tags import JSJoiner
 from medialint.tests.utils import assert_raises
-from medialint.signals import css_joined
 
 class CSSJoinTemplateTagUnitTest(TestCase):
-
     def test_can_find_css_paths(self):
-        "CSSJoin should make a lint check before compressing..."
         links = '''
             <link rel="stylesheet" href="/media/css/reset.css" />
             <link rel="stylesheet" href="/media/css/text.css" />
@@ -43,6 +41,21 @@ class CSSJoinTemplateTagUnitTest(TestCase):
                 "/media/css/text.css",
                 "/media/css/960.css",
                 "/media/css/main.css",
+            ]
+        )
+
+class JSJoinTemplateTagUnitTest(TestCase):
+    def test_can_find_js_paths(self):
+        links = '''
+            <script type="text/javascript" src="/media/js/jquery.js" />
+            <script type="text/javascript" src="/media/js/jquery-ui.js" />
+        '''
+        cj = JSJoiner(links)
+        self.assertEquals(
+            cj.links,
+            [
+                "/media/js/jquery.js",
+                "/media/js/jquery-ui.js",
             ]
         )
 
