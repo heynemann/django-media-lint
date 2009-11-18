@@ -16,7 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
-
 from medialint.validators import CSSLint
-from medialint.compressor import CSSCompressor
-from medialint.exceptions import InvalidCSSError
+
+class CSSCompressor(object):
+    def __init__(self, lintian=CSSLint):
+        self.lintian = lintian
+
+    def compress(self, css):
+        lint = self.lintian(css)
+        lint.validate()

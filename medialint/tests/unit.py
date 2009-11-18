@@ -18,9 +18,45 @@
 # Django settings for medialint_project project.
 import types
 from django.test import TestCase
+from mox import Mox
 
-from medialint import CSSLint, InvalidCSSError
+from medialint import CSSLint, InvalidCSSError, CSSCompressor
 from medialint.tests.utils import assert_raises
+
+class CSSCompressorUnitTest(TestCase):
+    def test_compressing_uses_lint_before_compressing(self):
+        "CSSCompressor should make a lint check before compressing..."
+        some_css = """
+        #my-test {
+            color:green;
+        }
+        """
+        mox = Mox()
+
+        csslint_class_mock = mox.CreateMockAnything()
+        csslint_mock = mox.CreateMockAnything()
+
+        csslint_class_mock(some_css).AndReturn(csslint_mock)
+        csslint_mock.validate().AndReturn(True)
+
+        mox.ReplayAll()
+        cp = CSSCompressor(lintian=csslint_class_mock)
+        cp.compress(some_css)
+        mox.VerifyAll()
+
+    def test_compressing_remove_extra_spaces(self):
+        "CSSCompressor should remove extra spaces"
+        some_css = "  #my-test    {            color:green;         }"
+        cp = CSSCompressor()
+        self.assertEquals(cp.compress(some_css),
+                          "#my-test { color:green; }")
+
+    def test_compressing_remove_extra_spaces_and_keep_nospaces(self):
+        "CSSCompressor should remove extra spaces, but don't touch nonspaces"
+        some_css = "#my-test{color:green;         }"
+        cp = CSSCompressor()
+        self.assertEquals(cp.compress(some_css),
+                          "#my-test{color:green; }")
 
 class CSSLintUnitTest(TestCase):
     def test_can_validate(self):
