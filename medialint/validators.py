@@ -38,13 +38,13 @@ class CSSLint(object):
         return css_files
 
     @classmethod
-    def check_files(cls, path):
+    def check_files(cls, path, ignore_hacks='False'):
         files = cls.fetch_css(path)
         for file_name in files:
             content = open(file_name).read()
             css = cls(content)
             try:
-                css.validate()
+                css.validate(ignore_hacks=ignore_hacks)
             except InvalidCSSError, e:
                 raise InvalidCSSError(
                     line=e.line,
@@ -56,7 +56,7 @@ class CSSLint(object):
         return True
 
 
-    def validate(self):
+    def validate(self, ignore_hacks='False'):
         try:
             self.parser.parseString(self.css)
             return True
@@ -70,6 +70,9 @@ class CSSLint(object):
             matched = match.search(e.msg)
             if matched:
                 char = matched.group('char').strip() or ' '
+                if ignore_hacks == 'True':        
+                    if char ==  "*" or char == "_":
+                        return True
                 raise InvalidCSSError(
                     line=matched.group('line'),
                     column=matched.group('column'),
