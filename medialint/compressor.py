@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
+import re
 from medialint.validators import CSSLint
 
 class CSSCompressor(object):
@@ -24,4 +25,13 @@ class CSSCompressor(object):
 
     def compress(self, css):
         lint = self.lintian(css)
-        lint.validate()
+        if lint.validate():
+            css = "".join([c.strip() for c in css.splitlines()])
+            css = re.sub(r'\s+', ' ', css)
+            css = re.sub(r'\s*[{]', '{', css)
+            css = re.sub(r'[{]\s*', '{', css)
+            css = re.sub(r'\s*[}]', '}', css)
+            css = re.sub(r'(?P<contents>[{].*[:].*)\s*[;]\s*[}]', '\g<contents>}', css)
+            css = css.strip()
+        return css
+
