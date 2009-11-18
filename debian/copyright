@@ -1,0 +1,7 @@
+Name: Sponge Web Framework
+Maintainer: Gabriel Falcão <gabriel@nacaolivre.org>
+Source: http://github.com/gabrielfalcao/sponge/tree/master
+Files: *
+Copyright: 2009, Gabriel Falcão <gabriel@nacaolivre.org>
+License: GPL-3
+ Sponge is licensed under GPL version 3, which can be found at /usr/share/common-licenses/GPL-3
