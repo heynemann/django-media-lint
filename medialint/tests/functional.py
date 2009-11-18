@@ -94,8 +94,7 @@ class JSJoinerTemplateTagFunctionalTest(TestCase):
     def test_rendering_js_joiner_simple_case(self):
         t = Template('''{% load medialint_tags %}
             {% jsjoin "/media/js/jquery-crew.js" %}
-                <link rel="stylesheet" href="/media/js/jquery.js" />
-                <link rel="stylesheet" href="/media/js/jquery-ui.js" />
+                <script type="text/javascript" src="/media/js/jquery.js"></script>
             {% endjsjoin %}
         ''')
         c = RequestContext({})
@@ -120,8 +119,8 @@ class JSJoinerTemplateTagFunctionalTest(TestCase):
 
         t = Template('''{% load medialint_tags %}
             {% jsjoin "/path/to.js" %}
-                <script type="text/javascript" src="/media/foo.js" />
-                <script type="text/javascript" src="/media/js/bar.js" />
+                <script type="text/javascript" src="/media/foo.js"></script>
+                <script type="text/javascript" src="/media/js/bar.js"></script>
             {% endjsjoin %}
         ''')
         c = RequestContext({})
@@ -130,11 +129,11 @@ class JSJoinerTemplateTagFunctionalTest(TestCase):
 
         assert self._signal_has_been_called
 
-    def _test_rendering_js_fail_when_http_in_link(self):
+    def test_rendering_js_fail_when_http_in_link(self):
         t = Template('''{% load medialint_tags %}
             {% jsjoin "/media/js/should-fail-http.js" %}
-                <link rel="stylesheet" href="/media/js/text.js" />
-                <link rel="stylesheet" href="http://globo.com/media/js/reset.js" />
+                <script type="text/javascript" src="/media/js/jquery.js"></script>
+                <script type="text/javascript" src="http://globo.com/media/js/jquery.js"></script>
             {% endjsjoin %}
         ''')
         c = RequestContext({})
@@ -142,16 +141,16 @@ class JSJoinerTemplateTagFunctionalTest(TestCase):
                       exc_pattern=r'Links under jsjoin templatetag can' \
                       ' not have full URL [(]starting with http[)]')
 
-    def _test_rendering_js_fail_when_file_does_not_exist(self):
+    def test_rendering_js_fail_when_file_does_not_exist(self):
         t = Template('''{% load medialint_tags %}
-            {% jsjoin "/media/js/should-fail-http.js" %}
-                <link rel="stylesheet" href="/media/js/text.js" />
-                <link rel="stylesheet" href="gluglu.js" />
+            {% jsjoin "/media/js/should-fail-404.js" %}
+                <script type="text/javascript" src="/media/js/jquery.js"></script>
+                <script type="text/javascript" src="/gluglu.js"></script>
             {% endjsjoin %}
         ''')
         c = RequestContext({})
         assert_raises(TemplateSyntaxError, t.render, c,
-                      exc_pattern=r'The file "gluglu.js" does not exist.')
+                      exc_pattern=r'The file "/gluglu.js" does not exist.')
 
 class CSSLintFunctionalTest(TestCase):
     def test_can_find_css_files_for_given_path(self):
