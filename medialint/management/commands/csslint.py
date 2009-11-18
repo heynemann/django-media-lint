@@ -25,6 +25,8 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--path', dest='path', default=None,
             help = "Validate css files"),
+        make_option('--ignore-hacks', dest='ignore-hacks', default=None,
+            help = "Ignore Css Hacks"),
 
     )
 

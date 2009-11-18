@@ -42,3 +42,7 @@ class CSSLintFunctionalTest(TestCase):
     def test_find_and_check_css_success(self):
         'CSSLint.fetch_and_check should find and check css files'
         assert CSSLint.check_files(LOCAL_FILE('media','css', 'valid')) is True, 'Should check successfully'
+    
+    def test_find_and_check_css_error_ignoring_hacks(self):
+        'CSSLint.fetch_and_check should find and check css files ignoring css hacks'
+        assert CSSLint.check_files(LOCAL_FILE('media','css', 'hacks')) is True, 'Should check successfully'
