@@ -18,11 +18,28 @@
 # Django settings for medialint_project project.
 from os.path import dirname, abspath, join
 from django.test import TestCase
+from django.template import Template, Context
 
 from medialint import CSSLint, InvalidCSSError
 from medialint.tests.utils import assert_raises
 
 LOCAL_FILE = lambda *x: join(abspath(dirname(__file__)), *x)
+
+class CSSJoinerTemplateTagFunctionalTest(TestCase):
+    def _test_rendering_css_joiner_simple_case(self):
+        t = Template('''{% load medialint %}
+            {% cssjoin "grid-stuff.css" %}
+                <link rel="stylesheet" href="/media/css/reset.css" />
+                <link rel="stylesheet" href="/media/css/text.css" />
+                <link rel="stylesheet" href="/media/css/960.css" />
+                <link rel="stylesheet" href="/media/css/main.css" />
+            {% endcssjoin %}
+        ''')
+        got = t.render(c).strip()
+        expected = '''<link rel="stylesheet" href="/media/css/grid-stuff.css" />'''
+        c = Context({})
+        self.assertEquals(got, expected)
+
 class CSSLintFunctionalTest(TestCase):
     def test_can_find_css_files_for_given_path(self):
         'CSSLint.fetch_css should find css files within a given path'

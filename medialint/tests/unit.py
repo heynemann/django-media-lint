@@ -20,11 +20,32 @@ import types
 from django.test import TestCase
 from mox import Mox
 
-from medialint import CSSLint, InvalidCSSError, CSSCompressor, JSLint, InvalidJSError
+from medialint import CSSLint, InvalidCSSError, CSSCompressor
+from medialint.templatetags.medialint import CSSJoiner
 from medialint.tests.utils import assert_raises
 
+class CSSJoinTemplateTagUnitTest(TestCase):
+    def test_can_find_css_paths(self):
+        "CSSJoin should make a lint check before compressing..."
+        links = '''
+            <link rel="stylesheet" href="/media/css/reset.css" />
+            <link rel="stylesheet" href="/media/css/text.css" />
+            <link rel="stylesheet" href="/media/css/960.css" />
+            <link rel="stylesheet" href="/media/css/main.css" />
+        '''
+        cj = CSSJoiner(links)
+        self.assertEquals(
+            cj.links,
+            [
+                "/media/css/reset.css",
+                "/media/css/text.css",
+                "/media/css/960.css",
+                "/media/css/main.css",
+            ]
+        )
+
 class CSSCompressorUnitTest(TestCase):
-    def _test_compressing_uses_lint_before_compressing(self):
+    def test_compressing_uses_lint_before_compressing(self):
         "CSSCompressor should make a lint check before compressing..."
         some_css = """
         #my-test {
@@ -44,19 +65,62 @@ class CSSCompressorUnitTest(TestCase):
         cp.compress(some_css)
         mox.VerifyAll()
 
-    def _test_compressing_remove_extra_spaces(self):
+    def test_compressing_remove_extra_spaces(self):
         "CSSCompressor should remove extra spaces"
-        some_css = "  #my-test    {            color:green;         }"
+        some_css = "  #my-test    {            color:green; border:1px;        }"
         cp = CSSCompressor()
         self.assertEquals(cp.compress(some_css),
-                          "#my-test { color:green; }")
+                          "#my-test{color:green; border:1px}")
 
-    def _test_compressing_remove_extra_spaces_and_keep_nospaces(self):
+    def test_compressing_remove_extra_spaces_and_keep_nospaces(self):
         "CSSCompressor should remove extra spaces, but don't touch nonspaces"
         some_css = "#my-test{color:green;         }"
         cp = CSSCompressor()
         self.assertEquals(cp.compress(some_css),
-                          "#my-test{color:green; }")
+                          "#my-test{color:green}")
+
+    def test_compressing_remove_linebreaks(self):
+        "CSSCompressor should remove line breaks and then, white spaces"
+        some_css = """
+            #linebreak    {
+                color:red;
+            }
+        """
+        cp = CSSCompressor()
+        self.assertEquals(cp.compress(some_css),
+                          "#linebreak{color:red}")
+
+    def test_compressing_remove_space_before_brackets(self):
+        'CSSCompressor should remove white spaces before "{"'
+        some_css = """
+            #linebreak    {
+                color:black;
+            }
+        """
+        cp = CSSCompressor()
+        self.assertEquals(cp.compress(some_css),
+                          "#linebreak{color:black}")
+
+    def test_compressing_remove_space_after_open_bracket(self):
+        'CSSCompressor should remove white spaces after "{"'
+        some_css = "#wee { color:black; border:1px;} "
+        cp = CSSCompressor()
+        self.assertEquals(cp.compress(some_css),
+                          "#wee{color:black; border:1px}")
+
+    def test_compressing_remove_space_before_closed_bracket(self):
+        'CSSCompressor should remove white spaces before "}"'
+        some_css = "#foo { color:red; border:1px } "
+        cp = CSSCompressor()
+        self.assertEquals(cp.compress(some_css),
+                          "#foo{color:red; border:1px}")
+
+    def test_compressing_avoid_semicolon_when_have_only_one_property(self):
+        'CSSCompressor should avoid semicolon when have only one property'
+        some_css = "#wee { color:blue; } "
+        cp = CSSCompressor()
+        self.assertEquals(cp.compress(some_css),
+                          "#wee{color:blue}")
 
 class CSSLintUnitTest(TestCase):
     def test_can_validate(self):
@@ -97,7 +161,7 @@ class CSSLintUnitTest(TestCase):
         assert css.validate() is True, 'Should validate successfully'
 
 
-class JSLintUnitTest(TestCase):
+class JSLintUnitTest(object):
     def test_can_validate(self):
         'CSSLint() should be able to validate js string'
         js = JSLint()
@@ -106,14 +170,14 @@ class JSLintUnitTest(TestCase):
         assert isinstance(css.validate, types.MethodType), \
                'The attribute validate should be a method'
 
-    def _test_raise_invalid_js_with_at_instead_of_semicolon(self):
+    def test_raise_invalid_js_with_at_instead_of_semicolon(self):
         'JSLint("js with a at instead of semicolon at line end") should raise invalid js'
-        
+
         js = JSLint(js_without_semicolon)
 
         assert_raises(InvalidJSError, js.validate, exc_pattern=r'Syntax error on line 2 column 23')
 
-    def _test_raise_invalid_js_when_get_no_semicolon(self):
+    def test_raise_invalid_js_when_get_no_semicolon(self):
         'JSLint("js without semicolon at line end") should raise invalid js'
         js_without_semicolon = """var a = 0
             var b = 0;
@@ -122,7 +186,7 @@ class JSLintUnitTest(TestCase):
         assert_raises(InvalidJSError, js.validate, exc_pattern=r'Syntax error on line 2 column 19')
 
 
-    def _test_should_validate_ok(self):
+    def test_should_validate_ok(self):
         'JSLint("a valid js") should validate successfully'
         css_ok = """
             var a = 0;
@@ -138,10 +202,3 @@ class CSSLintExceptionUnitTest(TestCase):
         self.assertEquals(exc.line, 2)
         self.assertEquals(exc.column, 10)
         self.assertEquals(exc.char, "$")
-
-
-class JSLintExceptionUnitTest(TestCase):
-    def _test_construction(self):
-        exc = InvalidJSError(line=2, column=10)
-        self.assertEquals(exc.line, 2)
-        self.assertEquals(exc.column, 10)
