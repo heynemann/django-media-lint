@@ -31,3 +31,13 @@ class InvalidCSSError(Exception):
         sfile = file_name and " file: %s" % file_name or ''
         msg = m % (sfile, self.line, self.column, self.char)
         super(InvalidCSSError, self).__init__(msg)
+
+class InvalidJSError(Exception):
+    def __init__(self, file_name=None, error=None):
+        self.file_name = file_name
+
+        if error:
+            super(InvalidJSError, self).__init__(error)
+            return
+        msg = "FALTA MENSAGEM AQUI"
+        super(InvalidJSError, self).__init__(msg)

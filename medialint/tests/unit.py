@@ -20,7 +20,7 @@ import types
 from django.test import TestCase
 from mox import Mox
 
-from medialint import CSSLint, InvalidCSSError, CSSCompressor
+from medialint import CSSLint, InvalidCSSError, CSSCompressor, JSLint, InvalidJSError 
 from medialint.templatetags.medialint_tags import CSSJoiner
 from medialint.templatetags.medialint_tags import JSJoiner
 from medialint.tests.utils import assert_raises
@@ -176,34 +176,27 @@ class CSSLintUnitTest(TestCase):
         assert css.validate() is True, 'Should validate successfully'
 
 
-class JSLintUnitTest(object):
+class JSLintUnitTest(TestCase):
     def test_can_validate(self):
-        'CSSLint() should be able to validate js string'
+        'JSLint() should be able to validate js string'
         js = JSLint()
-        assert hasattr(css, 'validate'), \
+        assert hasattr(js, 'validate'), \
                'Should have the attribute "validate"'
-        assert isinstance(css.validate, types.MethodType), \
+        assert isinstance(js.validate, types.MethodType), \
                'The attribute validate should be a method'
 
-    def test_raise_invalid_js_with_at_instead_of_semicolon(self):
-        'JSLint("js with a at instead of semicolon at line end") should raise invalid js'
-
-        js = JSLint(js_without_semicolon)
-
-        assert_raises(InvalidJSError, js.validate, exc_pattern=r'Syntax error on line 2 column 23')
 
     def test_raise_invalid_js_when_get_no_semicolon(self):
         'JSLint("js without semicolon at line end") should raise invalid js'
-        js_without_semicolon = """var a = 0
-            var b = 0;
-        }"""
+        js_without_semicolon = """var a = 10
+                          var b = 12;"""
         js = JSLint(js_without_semicolon)
         assert_raises(InvalidJSError, js.validate, exc_pattern=r'Syntax error on line 2 column 19')
 
 
     def test_should_validate_ok(self):
         'JSLint("a valid js") should validate successfully'
-        css_ok = """
+        js_ok = """
             var a = 0;
             var b = 0;
         """
@@ -217,3 +210,8 @@ class CSSLintExceptionUnitTest(TestCase):
         self.assertEquals(exc.line, 2)
         self.assertEquals(exc.column, 10)
         self.assertEquals(exc.char, "$")
+
+class JSLintExceptionUnitTest(TestCase):
+    def test_construction(self):
+        exc = InvalidJSError(file_name="file_name.js")
+        self.assertEquals(exc.file_name, "file_name.js")
