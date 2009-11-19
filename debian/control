@@ -3,7 +3,7 @@ Section: python
 Priority: optional
 Maintainer: Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>
 Standards-Version: 3.8.3
-Build-Depends: debhelper (>= 7), python, cdbs, python-setuptools, python-support, python-cssutils (>= 0.9.5.1), python-xml (>= 0.8.4), python-django
+Build-Depends: debhelper (>= 7), python, cdbs, python-setuptools, python-support, python-cssutils (>= 0.9.5.1), python-xml (>= 0.8.4), python-django, python-nose
 Homepage: http://github.com/gabrielfalcao/django-media-lint/tree/master
 Vcs-Git: git://github.com/gabrielfalcao/django-media-lint.git
 Vcs-Browser: http://github.com/gabrielfalcao/django-media-lint/tree/master

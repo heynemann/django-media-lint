@@ -122,7 +122,7 @@ class JSJoinNode(template.Node):
                        js_files = js_list[:],
                        context=context)
 
-        return '<script type="text/javascript" src="%s" />' % js_name
+        return '<script type="text/javascript" src="%s"></script>' % js_name
 
 def do_jsjoin(parser, token):
     bits = token.split_contents()

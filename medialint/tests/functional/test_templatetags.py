@@ -101,7 +101,7 @@ class JSJoinerTemplateTagFunctionalTest(TestCase):
         ''')
         c = RequestContext({})
         got = t.render(c).strip()
-        expected = '''<script type="text/javascript" src="/media/js/jquery-crew.js" />'''
+        expected = '''<script type="text/javascript" src="/media/js/jquery-crew.js"></script>'''
 
         self.assertEquals(got, expected)
 
