@@ -176,7 +176,7 @@ class CSSLintUnitTest(TestCase):
         assert css.validate() is True, 'Should validate successfully'
 
 
-class JSLintUnitTest(TestCase):
+class JSLintUnitTest(object):
     def test_can_validate(self):
         'JSLint() should be able to validate js string'
         js = JSLint()

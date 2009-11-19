@@ -28,19 +28,19 @@ class CSSLint(object):
         self.parser = CSSParser(raiseExceptions=True, loglevel=100)
 
     @classmethod
-    def fetch_css_files(cls, path):
-        files = []
+    def fetch_css(cls, path):
+        css_files = []
         for root, dirs, files in os.walk(path):
             for filename in files:
                 if filename.lower().endswith(".css"):
-                    files.append(os.path.join(root, filename))
+                    css_files.append(os.path.join(root, filename))
 
-        return files
+        return css_files
 
 
     @classmethod
-    def check_css_files(cls, path, ignore_hacks=False):
-        files = cls.fetch_css_files(path)
+    def check_files(cls, path, ignore_hacks=False):
+        files = cls.fetch_css(path)
         for file_name in files:
             content = open(file_name).read()
             css = cls(content)
@@ -90,12 +90,13 @@ class JSLint(object):
 
     @classmethod
     def fetch_js_files(cls, path):
-        files = []
+        js_files = []
         for root, dirs, files in os.walk(path):
             for filename in files:
                 if filename.lower().endswith(".js"):
-                    files.append(os.path.join(root, filename))
-
+                    js_files.append(os.path.join(root, filename))
+        
+        return js_files
 
     @classmethod
     def check_js_files(cls, path):
