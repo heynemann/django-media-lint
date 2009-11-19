@@ -83,3 +83,5 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'medialint.context_processors.request_processor',
 )
+
+TEST_RUNNER = 'nose_runner.run_tests'
