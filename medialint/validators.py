@@ -28,18 +28,19 @@ class CSSLint(object):
         self.parser = CSSParser(raiseExceptions=True, loglevel=100)
 
     @classmethod
-    def fetch_css(cls, path):
-        css_files = []
+    def fetch_css_files(cls, path):
+        files = []
         for root, dirs, files in os.walk(path):
             for filename in files:
                 if filename.lower().endswith(".css"):
-                    css_files.append(os.path.join(root, filename))
+                    files.append(os.path.join(root, filename))
 
-        return css_files
+        return files
+
 
     @classmethod
-    def check_files(cls, path, ignore_hacks=False):
-        files = cls.fetch_css(path)
+    def check_css_files(cls, path, ignore_hacks=False):
+        files = cls.fetch_css_files(path)
         for file_name in files:
             content = open(file_name).read()
             css = cls(content)
@@ -54,6 +55,8 @@ class CSSLint(object):
                 )
 
         return True
+
+
 
 
     def validate(self, ignore_hacks=False):
@@ -80,3 +83,41 @@ class CSSLint(object):
                 )
             else:
                 raise InvalidCSSError(error=e)
+
+class JSLint(object):
+    def __init__(self, js=None):
+        self.js = js
+
+    @classmethod
+    def fetch_js_files(cls, path):
+        files = []
+        for root, dirs, files in os.walk(path):
+            for filename in files:
+                if filename.lower().endswith(".js"):
+                    files.append(os.path.join(root, filename))
+
+
+    @classmethod
+    def check_js_files(cls, path):
+        files = cls.fetch_js_files(path)
+        for file_name in files:
+            content = open(file_name).read()
+            js = cls(content)
+            try:
+                js.validate()
+            except InvalidJSError, e:
+                raise InvalidJSError(
+                    error=e
+                )
+
+        return True
+
+
+    def validate(self):
+        try:
+            self.parser.parseString(self.css)
+            return True
+        except UnicodeDecodeError, e:
+            raise InvalidJSError(error=e)
+        
+        

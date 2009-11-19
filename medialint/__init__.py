@@ -20,3 +20,5 @@ __version__ = '0.1'
 from medialint.validators import CSSLint
 from medialint.compressor import CSSCompressor
 from medialint.exceptions import InvalidCSSError
+from medialint.validators import JSLint
+from medialint.exceptions import InvalidJSError
