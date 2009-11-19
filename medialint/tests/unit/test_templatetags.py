@@ -17,13 +17,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import types
-from django.test import TestCase
-from mox import Mox
 
-from medialint import CSSLint, InvalidCSSError, CSSCompressor
+from mox import Mox
+from django.test import TestCase
+
+from medialint import CSSLint
+from medialint import CSSCompressor
+from medialint import InvalidCSSError
+
+from medialint.tests.utils import assert_raises
 from medialint.templatetags.medialint_tags import CSSJoiner
 from medialint.templatetags.medialint_tags import JSJoiner
-from medialint.tests.utils import assert_raises
 
 class CSSJoinTemplateTagUnitTest(TestCase):
     def test_can_find_css_paths(self):

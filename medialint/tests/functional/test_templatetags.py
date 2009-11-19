@@ -17,10 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from os.path import dirname, abspath, join
+
 from django.test import TestCase
 from django.template import Template, RequestContext, TemplateSyntaxError
-from medialint.signals import css_joined, js_joined
+
 from medialint import CSSLint, InvalidCSSError
+from medialint.signals import css_joined, js_joined
 from medialint.tests.utils import assert_raises
 
 LOCAL_FILE = lambda *x: join(abspath(dirname(__file__)), *x)
