@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import template
+from django.conf import settings
 from django.http import HttpRequest
 from django.core.urlresolvers import resolve, Resolver404
 from lxml import html as lhtml
@@ -56,6 +57,9 @@ class CSSJoinNode(template.Node):
 
     def render(self, context):
         html = "".join([x.render(context) for x in self.nodelist])
+        if getattr(settings, 'DISABLE_MEDIALINT', False):
+            return html
+
         joiner = CSSJoiner(html)
         css_list = []
         content_list = []
@@ -101,6 +105,9 @@ class JSJoinNode(template.Node):
 
     def render(self, context):
         html = "".join([x.render(context) for x in self.nodelist])
+        if getattr(settings, 'DISABLE_MEDIALINT', False):
+            return html
+
         joiner = JSJoiner(html)
         js_list = []
         content_list = []

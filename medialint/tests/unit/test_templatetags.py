@@ -26,6 +26,7 @@ from medialint import CSSCompressor
 from medialint import InvalidCSSError
 
 from medialint.tests.utils import assert_raises
+from medialint.templatetags import medialint_tags
 from medialint.templatetags.medialint_tags import CSSJoiner
 from medialint.templatetags.medialint_tags import JSJoiner
 
@@ -47,6 +48,38 @@ class CSSJoinTemplateTagUnitTest(TestCase):
                 "/media/css/main.css",
             ]
         )
+    def test_can_be_disabled_by_settings(self):
+        "CSSJoinNode can be disabled with settings.DISABLE_MEDIALINT = True"
+        mox = Mox()
+        mocked_settings = mox.CreateMockAnything()
+        mocked_settings.DISABLE_MEDIALINT = True
+
+        varible_mock = mox.CreateMockAnything()
+
+        old_settings = medialint_tags.settings
+        medialint_tags.settings = mocked_settings
+
+        mox.StubOutWithMock(medialint_tags, 'template')
+        medialint_tags.template.Variable('should-be-css-name'). \
+            AndReturn(varible_mock)
+
+        context = 'should-be-context'
+
+        node1 = mox.CreateMockAnything()
+        node1.render(context).AndReturn("node1")
+        node2 = mox.CreateMockAnything()
+        node2.render(context).AndReturn("node2")
+        nodelist = [node1, node2]
+
+        mox.ReplayAll()
+        try:
+            nd = medialint_tags.CSSJoinNode(nodelist,
+                                            'should-be-css-name')
+            self.assertEquals(nd.render(context), 'node1node2')
+            mox.VerifyAll()
+        finally:
+            medialint_tags.settings = old_settings
+            mox.UnsetStubs()
 
 class JSJoinTemplateTagUnitTest(TestCase):
     def test_can_find_js_paths(self):
@@ -62,6 +95,38 @@ class JSJoinTemplateTagUnitTest(TestCase):
                 "/media/js/jquery-ui.js",
             ]
         )
+    def test_can_be_disabled_by_settings(self):
+        "JSJoinNode can be disabled with settings.DISABLE_MEDIALINT = True"
+        mox = Mox()
+        mocked_settings = mox.CreateMockAnything()
+        mocked_settings.DISABLE_MEDIALINT = True
+
+        varible_mock = mox.CreateMockAnything()
+
+        old_settings = medialint_tags.settings
+        medialint_tags.settings = mocked_settings
+
+        mox.StubOutWithMock(medialint_tags, 'template')
+        medialint_tags.template.Variable('should-be-js-name'). \
+            AndReturn(varible_mock)
+
+        context = 'should-be-context'
+
+        node1 = mox.CreateMockAnything()
+        node1.render(context).AndReturn("node1")
+        node2 = mox.CreateMockAnything()
+        node2.render(context).AndReturn("node2")
+        nodelist = [node1, node2]
+
+        mox.ReplayAll()
+        try:
+            nd = medialint_tags.JSJoinNode(nodelist,
+                                            'should-be-js-name')
+            self.assertEquals(nd.render(context), 'node1node2')
+            mox.VerifyAll()
+        finally:
+            medialint_tags.settings = old_settings
+            mox.UnsetStubs()
 
 class CSSCompressorUnitTest(TestCase):
     def test_compressing_uses_lint_before_compressing(self):
@@ -215,7 +280,7 @@ class CSSLintExceptionUnitTest(TestCase):
         self.assertEquals(exc.column, 10)
         self.assertEquals(exc.char, "$")
 
-class JSLintExceptionUnitTest(TestCase):
+class JSLintExceptionUnitTest(object):
     def test_construction(self):
         exc = InvalidJSError(file_name="file_name.js")
         self.assertEquals(exc.file_name, "file_name.js")
