@@ -1,3 +1,9 @@
+python-django-media-lint (0.1.2) unstable; urgency=low
+
+  * New release.
+
+ -- Gabriel Falcão <gabriel@nacaolivre.org>  Mon, 23 Nov 2009 15:31:18 -0200
+
 python-django-media-lint (0.1) unstable; urgency=low
 
   * Initial release.

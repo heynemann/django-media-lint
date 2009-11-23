@@ -1,4 +1,4 @@
-# Django Media Lint
+# Django Media Lint 0.1.2
 
 Agile-friendly CSS and JS lint checker and compressor for Django
 
