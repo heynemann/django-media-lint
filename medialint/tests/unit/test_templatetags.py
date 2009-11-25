@@ -154,7 +154,7 @@ class CSSCompressorUnitTest(TestCase):
         some_css = "  #my-test    {            color:green; border:1px;        }"
         cp = CSSCompressor()
         self.assertEquals(cp.compress(some_css),
-                          "#my-test{color:green; border:1px}")
+                          "#my-test{color:green;border:1px}")
 
     def test_compressing_remove_extra_spaces_and_keep_nospaces(self):
         "CSSCompressor should remove extra spaces, but don't touch nonspaces"
@@ -190,14 +190,14 @@ class CSSCompressorUnitTest(TestCase):
         some_css = "#wee { color:black; border:1px;} "
         cp = CSSCompressor()
         self.assertEquals(cp.compress(some_css),
-                          "#wee{color:black; border:1px}")
+                          "#wee{color:black;border:1px}")
 
     def test_compressing_remove_space_before_closed_bracket(self):
         'CSSCompressor should remove white spaces before "}"'
         some_css = "#foo { color:red; border:1px } "
         cp = CSSCompressor()
         self.assertEquals(cp.compress(some_css),
-                          "#foo{color:red; border:1px}")
+                          "#foo{color:red;border:1px}")
 
     def test_compressing_avoid_semicolon_when_have_only_one_property(self):
         'CSSCompressor should avoid semicolon when have only one property'

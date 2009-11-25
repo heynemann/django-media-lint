@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+from slimmer import css_slimmer
 from medialint.validators import CSSLint
 
 class CSSCompressor(object):
@@ -26,12 +27,7 @@ class CSSCompressor(object):
     def compress(self, css):
         lint = self.lintian(css)
         if lint.validate():
-            css = "".join([c.strip() for c in css.splitlines()])
-            css = re.sub(r'\s+', ' ', css)
-            css = re.sub(r'\s*[{]', '{', css)
-            css = re.sub(r'[{]\s*', '{', css)
-            css = re.sub(r'\s*[}]', '}', css)
-            css = re.sub(r'(?P<contents>[{].*[:].*)\s*[;]\s*[}]', '\g<contents>}', css)
-            css = css.strip()
+            return css_slimmer(css)
+
         return css
 
