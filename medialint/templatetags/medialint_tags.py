@@ -42,46 +42,63 @@ class JSJoiner(object):
         for link in self.html.cssselect('script'):
             self.links.append(link.attrib['src'])
 
-class CSSJoinNode(template.Node):
-    http_error = 'Links under cssjoin templatetag can not have full ' \
-                 'URL (starting with http)'
-
+class MediaJoinNode(template.Node):
     file_404 = 'The file "%s" does not exist.'
 
-    def __init__(self, nodelist, css_name):
+    def __init__(self, nodelist, file_name):
         self.nodelist = nodelist
-        self.css_name = template.Variable(css_name)
-
-    def __repr__(self):
-        return "<CSSJoinNode>"
-
+        self.file_name = template.Variable(file_name)
+        self.file_list = []
+        self.content_list = []
+ 
     def render(self, context):
         html = "".join([x.render(context) for x in self.nodelist])
         if getattr(settings, 'DISABLE_MEDIALINT', False):
             return html
 
-        joiner = CSSJoiner(html)
-        css_list = []
-        content_list = []
-        css_name = self.css_name.resolve(context)
+        joiner = self.joiner(html)
+        self.file_name = self.file_name.resolve(context)
         for link in joiner.links:
             if link.startswith("http://"):
                 raise template.TemplateSyntaxError(self.http_error)
-            css_list.append(link)
+            self.file_list.append(link)
             try:
                 view, args, kwargs = resolve(link)
             except Resolver404, e:
                 raise template.TemplateSyntaxError(self.file_404 % link)
             content = view(request=HttpRequest(), *args, **kwargs)
-            content_list.append(content.content.strip())
+            self.content_list.append(content.content.strip())
 
+        content = "".join(self.content_list)
+
+        self.send_signal(self.file_name, content, self.file_list, context)
+        return self.tag % self.file_name
+
+class CSSJoinNode(MediaJoinNode):
+    http_error = 'Links under cssjoin templatetag can not have full ' \
+                 'URL (starting with http)'
+    joiner = CSSJoiner
+    tag = '<link rel="stylesheet" href="%s" />'
+
+    def send_signal(self, file_name, content, files, context):
         css_joined.send(sender=self,
-                        css_name=css_name,
-                        joined_content="".join(content_list),
-                        css_files = css_list[:],
+                        css_name=file_name,
+                        joined_content=content,
+                        css_files=files,
                         context=context)
 
-        return '<link rel="stylesheet" href="%s" />' % css_name
+class JSJoinNode(MediaJoinNode):
+    http_error = 'Links under jsjoin templatetag can not have full ' \
+                 'URL (starting with http)'
+    joiner = JSJoiner
+    tag = '<script type="text/javascript" src="%s"></script>'
+
+    def send_signal(self, file_name, content, files, context):
+        js_joined.send(sender=self,
+                       js_name=file_name,
+                       joined_content=content,
+                       js_files=files,
+                       context=context)
 
 def do_cssjoin(parser, token):
     bits = token.split_contents()
@@ -89,47 +106,6 @@ def do_cssjoin(parser, token):
     nodelist = parser.parse(('endcssjoin',))
     parser.delete_first_token()
     return CSSJoinNode(nodelist, css_name)
-
-class JSJoinNode(template.Node):
-    http_error = 'Links under jsjoin templatetag can not have full ' \
-                 'URL (starting with http)'
-
-    file_404 = 'The file "%s" does not exist.'
-
-    def __init__(self, nodelist, js_name):
-        self.nodelist = nodelist
-        self.js_name = template.Variable(js_name)
-
-    def __repr__(self):
-        return "<JSJoinNode>"
-
-    def render(self, context):
-        html = "".join([x.render(context) for x in self.nodelist])
-        if getattr(settings, 'DISABLE_MEDIALINT', False):
-            return html
-
-        joiner = JSJoiner(html)
-        js_list = []
-        content_list = []
-        js_name = self.js_name.resolve(context)
-        for link in joiner.links:
-            if link.startswith("http://"):
-                raise template.TemplateSyntaxError(self.http_error)
-            js_list.append(link)
-            try:
-                view, args, kwargs = resolve(link)
-            except Resolver404, e:
-                raise template.TemplateSyntaxError(self.file_404 % link)
-            content = view(request=HttpRequest(), *args, **kwargs)
-            content_list.append(content.content.strip())
-
-        js_joined.send(sender=self,
-                       js_name=js_name,
-                       joined_content="".join(content_list),
-                       js_files = js_list[:],
-                       context=context)
-
-        return '<script type="text/javascript" src="%s"></script>' % js_name
 
 def do_jsjoin(parser, token):
     bits = token.split_contents()
