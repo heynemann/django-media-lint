@@ -65,7 +65,7 @@ def run_tests(test_labels, verbosity=1, interactive=True, extra_tests=[]):
     # Pretend it's a production environment.
     settings.DEBUG = False
 
-    nose_argv = ['nosetests']
+    nose_argv = ['nosetests', '-s']
     if hasattr(settings, 'NOSE_ARGS'):
         nose_argv.extend(settings.NOSE_ARGS)
 
