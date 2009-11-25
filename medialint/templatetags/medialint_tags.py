@@ -22,6 +22,7 @@ from django.http import HttpRequest
 from django.core.urlresolvers import resolve, Resolver404
 from lxml import html as lhtml
 
+from medialint.compressor import CSSCompressor
 from medialint.signals import css_joined, js_joined
 
 register = template.Library()
@@ -57,6 +58,8 @@ class MediaJoinNode(template.Node):
             return html
 
         joiner = self.joiner(html)
+
+
         self.file_name = self.file_name.resolve(context)
         for link in joiner.links:
             if link.startswith("http://"):
@@ -71,6 +74,10 @@ class MediaJoinNode(template.Node):
 
         content = "".join(self.content_list)
 
+        if self.compressor:
+            compressor = self.compressor()
+            content = compressor.compress(content)
+
         self.send_signal(self.file_name, content, self.file_list, context)
         return self.tag % self.file_name
 
@@ -78,6 +85,7 @@ class CSSJoinNode(MediaJoinNode):
     http_error = 'Links under cssjoin templatetag can not have full ' \
                  'URL (starting with http)'
     joiner = CSSJoiner
+    compressor = CSSCompressor
     tag = '<link rel="stylesheet" href="%s" />'
 
     def send_signal(self, file_name, content, files, context):
@@ -92,7 +100,7 @@ class JSJoinNode(MediaJoinNode):
                  'URL (starting with http)'
     joiner = JSJoiner
     tag = '<script type="text/javascript" src="%s"></script>'
-
+    compressor = None
     def send_signal(self, file_name, content, files, context):
         js_joined.send(sender=self,
                        js_name=file_name,

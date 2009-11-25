@@ -53,7 +53,7 @@ class CSSJoinerTemplateTagFunctionalTest(TestCase):
             )
             self.assertEquals(
                 kw['joined_content'],
-                "#foo{}#bar{}"
+                "#foo{color:red}#bar{color:blue;font:11px}"
             )
             self._signal_has_been_called = True
 
