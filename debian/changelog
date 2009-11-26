@@ -1,3 +1,9 @@
+python-django-media-lint (0.1.4) unstable; urgency=low
+
+  * new version.
+
+ -- Gabriel Falcão Gonçalves de Moura <gabriel@nacaolivre.org>  Thu, 26 Nov 2009 15:07:08 -0200
+
 python-django-media-lint (0.1.3) unstable; urgency=low
 
   * new version.
