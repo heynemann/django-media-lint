@@ -142,7 +142,7 @@ class CSSCompressorUnitTest(TestCase):
         csslint_mock = mox.CreateMockAnything()
 
         csslint_class_mock(some_css).AndReturn(csslint_mock)
-        csslint_mock.validate().AndReturn(True)
+        csslint_mock.validate(ignore_hacks=True).AndReturn(True)
 
         mox.ReplayAll()
         cp = CSSCompressor(lintian=csslint_class_mock)
