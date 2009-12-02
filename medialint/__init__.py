@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # Django settings for medialint_project project.
 __version__ = '0.1.4'
+
 from medialint.validators import CSSLint
 from medialint.compressor import CSSCompressor
 from medialint.exceptions import InvalidCSSError

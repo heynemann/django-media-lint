@@ -24,3 +24,28 @@ Agile-friendly CSS and JS lint checker and compressor for Django
         ...
         'medialint',
     )`
+
+## Settings
+
++ DISABLE_MEDIALINT (True/False)
+
+Disables media lint at all, nothing will be joined, minified or
+checked. Useful for debugging proposals.
+
+### New in version 0.1.5
+
++ MEDIALINT_SERVERNAME (string)
+
+A prefix for ALL CSS and JS under Media Lint management.
+Good for serving static files from a different domain.
+
++ MEDIALINT_GLOBAL_SUFFIX (string)
+
+A suffix for all CSS and JS under Media Lint management.
+
+Useful for adding a deploy-time timestamp, so that Varnish and other
+caching mechanisms will serve only the updated version of those static
+files.
+
+    `from uuidimport uuid4
+    MEDIALINT_GLOBAL_SUFFIX = str(uuid4())`
