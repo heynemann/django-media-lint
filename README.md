@@ -47,5 +47,5 @@ Useful for adding a deploy-time timestamp, so that Varnish and other
 caching mechanisms will serve only the updated version of those static
 files.
 
-    `from uuidimport uuid4
+    `from uuid import uuid4
     MEDIALINT_GLOBAL_SUFFIX = str(uuid4())`
