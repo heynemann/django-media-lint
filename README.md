@@ -39,6 +39,12 @@ checked. Useful for debugging proposals.
 A prefix for ALL CSS and JS under Media Lint management.
 Good for serving static files from a different domain.
 
+        Example:
+    `
+    from uuid import uuid4
+    MEDIALINT_GLOBAL_SUFFIX = 'http://static.myserver.com'
+    `
+
 + MEDIALINT_GLOBAL_SUFFIX (string)
 
 A suffix for all CSS and JS under Media Lint management.
@@ -46,6 +52,8 @@ A suffix for all CSS and JS under Media Lint management.
 Useful for adding a deploy-time timestamp, so that Varnish and other
 caching mechanisms will serve only the updated version of those static
 files.
-
-    `from uuid import uuid4
-    MEDIALINT_GLOBAL_SUFFIX = str(uuid4())`
+        Example:
+    `
+    from uuid import uuid4
+    MEDIALINT_GLOBAL_SUFFIX = str(uuid4())
+    `
