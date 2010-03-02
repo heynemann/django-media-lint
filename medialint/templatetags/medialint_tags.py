@@ -21,6 +21,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.core.urlresolvers import resolve, Resolver404
 from lxml import html as lhtml
+from django.core.cache import cache
 
 from medialint.compressor import CSSCompressor
 from medialint.signals import css_joined, js_joined
@@ -56,11 +57,13 @@ class MediaJoinNode(template.Node):
         html = "".join([x.render(context) for x in self.nodelist])
         if getattr(settings, 'DISABLE_MEDIALINT', False):
             return html
+        file_name = self.file_name.resolve(context)
+        arquivo_atualizado = cache.get(file_name)
+        if arquivo_atualizado:
+            return self.tag % file_name
 
         joiner = self.joiner(html)
 
-
-        self.file_name = self.file_name.resolve(context)
         for link in joiner.links:
             if link.startswith("http://"):
                 raise template.TemplateSyntaxError(self.http_error)
@@ -78,8 +81,9 @@ class MediaJoinNode(template.Node):
             compressor = self.compressor()
             content = compressor.compress(content)
 
-        self.send_signal(self.file_name, content, self.file_list, context)
-        return self.tag % self.file_name
+        cache.set(file_name, True, 600)
+        self.send_signal(file_name, content, self.file_list, context)
+        return self.tag % file_name
 
 class CSSJoinNode(MediaJoinNode):
     http_error = 'Links under cssjoin templatetag can not have full ' \

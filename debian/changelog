@@ -1,3 +1,15 @@
+python-django-media-lint (0.1.6) unstable; urgency=low
+
+  * turning render method atomic.
+
+ -- Márcio Duarte <maethorin@gmail.com>  Mon, 01 Mar 2010 14:44:00 -0300
+
+python-django-media-lint (0.1.5) unstable; urgency=low
+
+  * Including django cache to avoid resolve process on each call.
+
+ -- Márcio Duarte <maethorin@gmail.com>  Mon, 01 Mar 2010 14:44:00 -0300
+
 python-django-media-lint (0.1.4) unstable; urgency=low
 
   * new version.
