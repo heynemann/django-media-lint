@@ -70,10 +70,10 @@ class CSSLint(object):
             regex = r'[[](?P<line>\d+)[:](?P<column>\d+)[:](?P<char>.+)[]]'
             match = re.compile(regex)
 
-            matched = match.search(e.msg)
+            matched = match.search(unicode(e))
             if matched:
                 char = matched.group('char').strip() or ' '
-                if ignore_hacks:        
+                if ignore_hacks:
                     if char ==  "*" or char == "_":
                         return True
                 raise InvalidCSSError(
@@ -95,7 +95,7 @@ class JSLint(object):
             for filename in files:
                 if filename.lower().endswith(".js"):
                     js_files.append(os.path.join(root, filename))
-        
+
         return js_files
 
     @classmethod
@@ -120,5 +120,5 @@ class JSLint(object):
             return True
         except UnicodeDecodeError, e:
             raise InvalidJSError(error=e)
-        
-        
+
+
