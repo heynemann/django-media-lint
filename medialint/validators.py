@@ -70,7 +70,8 @@ class CSSLint(object):
             regex = r'[[](?P<line>\d+)[:](?P<column>\d+)[:](?P<char>.+)[]]'
             match = re.compile(regex)
 
-            matched = match.search(unicode(e))
+            msg = unicode(e) or unicode(e.msg)
+            matched = match.search(msg)
             if matched:
                 char = matched.group('char').strip() or ' '
                 if ignore_hacks:

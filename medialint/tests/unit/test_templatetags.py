@@ -20,6 +20,7 @@ import types
 
 from mox import Mox
 from django.test import TestCase
+from django.template import Template, Context
 
 from medialint import CSSLint
 from medialint import CSSCompressor
@@ -29,8 +30,20 @@ from medialint.tests.utils import assert_raises
 from medialint.templatetags import medialint_tags
 from medialint.templatetags.medialint_tags import CSSJoiner
 from medialint.templatetags.medialint_tags import JSJoiner
+from medialint.exceptions import InvalidMediaName
 
 class CSSJoinTemplateTagUnitTest(TestCase):
+    def test_css_paths_equals_file_name_should_raise(self):
+        template = Template('''
+            {% load medialint_tags %}
+            {% cssjoin "/same_name_as_file_name.css" %}
+                <link rel="stylesheet" href="/same_name_as_file_name.css" />
+            {% endcssjoin %}
+        ''')
+        context = Context({})
+        assert_raises(InvalidMediaName, template.render, context)
+
+
     def test_can_find_css_paths(self):
         links = '''
             <link rel="stylesheet" href="/media/css/reset.css" />

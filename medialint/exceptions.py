@@ -41,3 +41,6 @@ class InvalidJSError(Exception):
             return
         msg = "FALTA MENSAGEM AQUI"
         super(InvalidJSError, self).__init__(msg)
+
+class InvalidMediaName(Exception):
+    pass
