@@ -1,3 +1,11 @@
+python-django-media-lint (0.1.7) unstable;urgency=low
+
+  * created method for verify files duplicate.
+  * change code to verify if join file is already exist in link list. If exist, the code raise InvalidNameError exception 
+
+ -- Claudio e Andre <jose.cluadio@corp.globo.com>  Mon, 07 Mar 2010 17:17:00 -0300
+
+
 python-django-media-lint (0.1.6) unstable; urgency=low
 
   * turning render method atomic.
