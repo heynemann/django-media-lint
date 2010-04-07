@@ -19,15 +19,31 @@
 from os.path import dirname, abspath, join
 
 from django.test import TestCase
-from django.template import Template, RequestContext, TemplateSyntaxError
+from django.template import Template, RequestContext, TemplateSyntaxError, Context
 
 from medialint import CSSLint, InvalidCSSError
 from medialint.signals import css_joined, js_joined
 from medialint.tests.utils import assert_raises
+from medialint.exceptions import InvalidMediaNameError
 
 LOCAL_FILE = lambda *x: join(abspath(dirname(__file__)), *x)
 
 class CSSJoinerTemplateTagFunctionalTest(TestCase):
+    def test_css_paths_equals_file_name_should_raise(self):
+        template = Template('''
+            {% load medialint_tags %}
+            {% cssjoin "/media/css/fake_joined.css" %}
+                <link rel="stylesheet" href="/media/css/fake_joined.css" />
+            {% endcssjoin %}
+        ''')
+        c = Context({})
+
+        try:
+            template.render(c)
+        except Exception, ex:
+            self.assertEquals(ex.exc_info[0], InvalidMediaNameError)
+            self.assertEquals(unicode(ex.exc_info[1]), u'The file "/media/css/fake_joined.css" cannot be merged because it s on the files path.')
+
     def test_rendering_css_joiner_simple_case(self):
         t = Template('''{% load medialint_tags %}
             {% cssjoin "/media/css/grid-stuff.css" %}

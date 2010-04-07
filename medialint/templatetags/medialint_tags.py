@@ -25,6 +25,7 @@ from django.core.cache import cache
 
 from medialint.compressor import CSSCompressor
 from medialint.signals import css_joined, js_joined
+from medialint.exceptions import InvalidMediaNameError
 
 register = template.Library()
 
@@ -54,6 +55,7 @@ class MediaJoinNode(template.Node):
         self.content_list = []
  
     def render(self, context):
+
         html = "".join([x.render(context) for x in self.nodelist])
         if getattr(settings, 'DISABLE_MEDIALINT', False):
             return html
@@ -63,6 +65,9 @@ class MediaJoinNode(template.Node):
             return self.tag % file_name
 
         joiner = self.joiner(html)
+
+        if self.file_name.literal in joiner.links:
+            raise InvalidMediaNameError(u'The file "%s" cannot be merged because it s on the files path.' % self.file_name.literal)
 
         for link in joiner.links:
             if link.startswith("http://"):
