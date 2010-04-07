@@ -30,8 +30,43 @@ from medialint.tests.utils import assert_raises
 from medialint.templatetags import medialint_tags
 from medialint.templatetags.medialint_tags import CSSJoiner
 from medialint.templatetags.medialint_tags import JSJoiner
+from medialint.templatetags.medialint_tags import MediaJoinNode
 
 class CSSJoinTemplateTagUnitTest(TestCase):
+
+    def test_verify_duplication_return_duplicated(self):
+        list_links = ['/media/css/reset.css','/media/css/reset.css','/media/folder/css/reset.css','reset_ohter2.css',]
+
+        links = '''<link rel="stylesheet" href="/media/css/reset.css" />'''
+        
+        mjn = MediaJoinNode('None','None')
+        list_duplicated = mjn._verify_duplication(list_links)
+        
+        assert len(list_duplicated) > 0
+        assert list_duplicated[0] == '"/media/css/reset.css" is duplicate. It appears 2 times'
+
+
+    def test_verify_duplication_return_correct_msg(self):
+        list_links = ['/media/css/reset.css','/media/css/reset.css','/media/css/reset.css','/media/css/reset.css',]
+
+        links = '''<link rel="stylesheet" href="/media/css/reset.css" />'''
+        
+        mjn = MediaJoinNode('None','None')
+        list_duplicated = mjn._verify_duplication(list_links)
+        
+        assert len(list_duplicated) > 0
+        assert list_duplicated[0] == '"/media/css/reset.css" is duplicate. It appears 4 times'
+
+
+    def test_verify_duplication_not_return_list(self):
+        list_links = ['/media/css/reset.css','/media/css2/reset.css','/media/folder/css/reset.css','reset_ohter2.css',]
+
+        links = '''<link rel="stylesheet" href="/media/css/reset.css" />'''
+        
+        mjn = MediaJoinNode('None','None')
+        list_duplicated = mjn._verify_duplication(list_links)
+        
+        assert len(list_duplicated) == 0
 
     def test_can_find_css_paths(self):
         links = '''

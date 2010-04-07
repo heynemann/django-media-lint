@@ -24,11 +24,48 @@ from django.template import Template, RequestContext, TemplateSyntaxError, Conte
 from medialint import CSSLint, InvalidCSSError
 from medialint.signals import css_joined, js_joined
 from medialint.tests.utils import assert_raises
-from medialint.exceptions import InvalidMediaNameError
+from medialint.exceptions import InvalidMediaNameError,DuplicatedMediaError
 
 LOCAL_FILE = lambda *x: join(abspath(dirname(__file__)), *x)
 
 class CSSJoinerTemplateTagFunctionalTest(TestCase):
+
+    def test_css_duplicated_path_should_raise_with_correct_msg(self):
+        template = Template('''
+            {% load medialint_tags %}
+            {% cssjoin "/media/css/reset.css" %}
+                <link rel="stylesheet" href="/media/css/fake_joined.css" />
+                <link rel="stylesheet" href="/media/css/fake_joined.css" />
+                <link rel="stylesheet" href="/media/css/text.css" />
+                <link rel="stylesheet" href="/media/css/960.css" />
+                <link rel="stylesheet" href="/media/css/960.css" />
+            {% endcssjoin %}
+        ''')
+        c = Context({})
+        try:
+            template.render(c)
+            assert False, "shouldn't reach here"
+        except Exception, ex:
+            self.assertEquals(ex.exc_info[0], DuplicatedMediaError)
+            self.assertEquals(unicode(ex.exc_info[1]), u'The files "/media/css/fake_joined.css" is duplicate. It appears 2 times,"/media/css/960.css" is duplicate. It appears 2 times ')
+
+    def test_css_duplicated_path_should_raise(self):
+        template = Template('''
+            {% load medialint_tags %}
+            {% cssjoin "/media/css/reset.css" %}
+                <link rel="stylesheet" href="/media/css/fake_joined.css" />
+                <link rel="stylesheet" href="/media/css/fake_joined.css" />
+            {% endcssjoin %}
+        ''')
+        c = Context({})
+        try:
+            template.render(c)
+            assert False, "shouldn't reach here"
+        except Exception, ex:
+            self.assertEquals(ex.exc_info[0], DuplicatedMediaError)
+            self.assertEquals(unicode(ex.exc_info[1]), u'The files "/media/css/fake_joined.css" is duplicate. It appears 2 times ')
+
+
     def test_css_paths_equals_file_name_should_raise(self):
         template = Template('''
             {% load medialint_tags %}
@@ -40,9 +77,11 @@ class CSSJoinerTemplateTagFunctionalTest(TestCase):
 
         try:
             template.render(c)
+            assert False, "shouldn't reach here"
         except Exception, ex:
             self.assertEquals(ex.exc_info[0], InvalidMediaNameError)
             self.assertEquals(unicode(ex.exc_info[1]), u'The file "/media/css/fake_joined.css" cannot be merged because it s on the files path.')
+
 
     def test_rendering_css_joiner_simple_case(self):
         t = Template('''{% load medialint_tags %}

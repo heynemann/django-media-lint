@@ -44,3 +44,6 @@ class InvalidJSError(Exception):
 
 class InvalidMediaNameError(Exception):
     pass
+    
+class DuplicatedMediaError(Exception):
+    pass

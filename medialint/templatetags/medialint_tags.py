@@ -25,7 +25,7 @@ from django.core.cache import cache
 
 from medialint.compressor import CSSCompressor
 from medialint.signals import css_joined, js_joined
-from medialint.exceptions import InvalidMediaNameError
+from medialint.exceptions import InvalidMediaNameError, DuplicatedMediaError
 
 register = template.Library()
 
@@ -53,7 +53,12 @@ class MediaJoinNode(template.Node):
         self.file_name = template.Variable(file_name)
         self.file_list = []
         self.content_list = []
- 
+        
+    def _verify_duplication(self, list_links = []):
+
+        duplicated_entries = list(set([(item, list_links.count(item)) for item in list_links if list_links.count(item) > 1]))
+        return ['"%s" is duplicate. It appears %d times' % (item, times) for item, times in duplicated_entries]
+
     def render(self, context):
 
         html = "".join([x.render(context) for x in self.nodelist])
@@ -69,9 +74,15 @@ class MediaJoinNode(template.Node):
         if self.file_name.literal in joiner.links:
             raise InvalidMediaNameError(u'The file "%s" cannot be merged because it s on the files path.' % self.file_name.literal)
 
+        list_duplicates  = self._verify_duplication(joiner.links)
+        if list_duplicates:
+            msg = ','.join(list_duplicates)
+            raise DuplicatedMediaError("The files %s " % msg)
+        
         for link in joiner.links:
             if link.startswith("http://"):
                 raise template.TemplateSyntaxError(self.http_error)
+
             self.file_list.append(link)
             try:
                 view, args, kwargs = resolve(link)
