@@ -16,11 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from lxml import html as lhtml
+
 from django import template
 from django.conf import settings
 from django.http import HttpRequest
 from django.core.urlresolvers import resolve, Resolver404
-from lxml import html as lhtml
 from django.core.cache import cache
 
 from medialint.compressor import CSSCompressor
@@ -59,11 +60,13 @@ class MediaJoinNode(template.Node):
         duplicated_entries = list(set([(item, list_links.count(item)) for item in list_links if list_links.count(item) > 1]))
         return ['"%s" is duplicate. It appears %d times' % (item, times) for item, times in duplicated_entries]
 
+
     def render(self, context):
 
         html = "".join([x.render(context) for x in self.nodelist])
         if getattr(settings, 'DISABLE_MEDIALINT', False):
             return html
+        
         file_name = self.file_name.resolve(context)
         arquivo_atualizado = cache.get(file_name)
         if arquivo_atualizado:

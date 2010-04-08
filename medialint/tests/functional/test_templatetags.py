@@ -19,7 +19,9 @@
 from os.path import dirname, abspath, join
 
 from django.test import TestCase
+from django.http import HttpRequest
 from django.template import Template, RequestContext, TemplateSyntaxError, Context
+from django.core.urlresolvers import resolve, Resolver404
 
 from medialint import CSSLint, InvalidCSSError
 from medialint.signals import css_joined, js_joined
@@ -29,6 +31,53 @@ from medialint.exceptions import InvalidMediaNameError,DuplicatedMediaError
 LOCAL_FILE = lambda *x: join(abspath(dirname(__file__)), *x)
 
 class CSSJoinerTemplateTagFunctionalTest(TestCase):
+
+    def test_css_same_name_different_path_work_correct(self):
+        template = Template('''
+            {% load medialint_tags %}
+            {% cssjoin "/media/css/reset.css" %}
+                <link rel="stylesheet" href="/media/css/fake_joined.css" />
+                <link rel="stylesheet" href="/media/css2/fake_joined.css" />
+            {% endcssjoin %}
+        ''')
+
+        c = Context({})
+        got = template.render(c).strip()
+        expected = '''<link rel="stylesheet" href="/media/css/reset.css" />'''
+        self.assertEquals(got, expected)
+        
+    def test_css_same_name_different_path_include_boths(self):
+        self._signal_has_been_called = False
+        template = Template('''
+            {% load medialint_tags %}
+            {% cssjoin "/media/css/reset.css" %}
+                <link rel="stylesheet" href="/media/css/fake_joined.css" />
+                <link rel="stylesheet" href="/media/css2/fake_joined.css" />
+            {% endcssjoin %}
+        ''')
+        view_1, args_1, kwargs_1 = resolve('/media/css/fake_joined.css')
+        view_2, args_2, kwargs_2 = resolve('/media/css2/fake_joined.css')
+        content_1 = view_1(request=HttpRequest(), *args_1, **kwargs_1)
+        content_2 = view_2(request=HttpRequest(), *args_2, **kwargs_2)
+        content_expected = "".join([content_1.content, content_2.content])
+        
+        def on_render(sender, **kw):
+            self.assertEquals(
+                 kw['joined_content'],
+                 '.teste{border:solid 1px}.teste2{font:12px}'
+             )
+            self._signal_has_been_called = True
+
+        
+        css_joined.connect(on_render)
+        c = RequestContext({})
+        got = template.render(c).strip()
+        expected = '''<link rel="stylesheet" href="/media/css/reset.css" />'''
+
+        assert self._signal_has_been_called
+        self.assertEquals(got, expected)
+        css_joined.disconnect(on_render)
+
 
     def test_css_duplicated_path_should_raise_with_correct_msg(self):
         template = Template('''
@@ -123,6 +172,7 @@ class CSSJoinerTemplateTagFunctionalTest(TestCase):
         t.render(c)
 
         assert self._signal_has_been_called
+        css_joined.disconnect(on_render)
 
     def test_rendering_css_fail_when_http_in_link(self):
         t = Template('''{% load medialint_tags %}
@@ -214,7 +264,7 @@ class CSSLintFunctionalTest(TestCase):
         'CSSLint.fetch_css should find css files within a given path'
         css_files = sorted(CSSLint.fetch_css(LOCAL_FILE('media')))
         self.assertTrue(isinstance(css_files, list))
-        self.assertEquals(len(css_files), 3)
+        self.assertEquals(len(css_files), 4)
         self.assertEquals(css_files[0], LOCAL_FILE('media', 'css', 'hacks', 'valid-css1-with-hacks.css'))
         self.assertEquals(css_files[1], LOCAL_FILE('media', 'css', 'invalid-css1.css'))
         self.assertEquals(css_files[2], LOCAL_FILE('media', 'css', 'valid', 'valid-css1.css'))
