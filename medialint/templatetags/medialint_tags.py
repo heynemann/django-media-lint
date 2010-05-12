@@ -100,7 +100,9 @@ class MediaJoinNode(template.Node):
             compressor = self.compressor()
             content = compressor.compress(content)
 
-        cache.set(file_name, True, 600)
+        cache_time = getattr(settings, 'MEDIALINT_CACHE_TIME', 600)
+        
+        cache.set(file_name, True, cache_time)
         self.send_signal(file_name, content, self.file_list, context)
         return self.tag % file_name
 

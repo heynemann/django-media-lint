@@ -1,4 +1,4 @@
-# Django Media Lint 0.1.2
+# Django Media Lint 0.1.8
 
 Agile-friendly CSS and JS lint checker and compressor for Django
 
@@ -57,3 +57,8 @@ files.
     from uuid import uuid4
     MEDIALINT_GLOBAL_SUFFIX = str(uuid4())
     `
+### New in version 0.1.8
+
++ MEDIALINT_CHACHE_TIME (integer/default 600)
+
+The default number of seconds to cache for js/css joined and minified.
