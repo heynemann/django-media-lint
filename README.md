@@ -1,3 +1,6 @@
+# ATENTION
+
+*THIS PROJECT IS PROBABLY GOING TO BE UNMAINTAINED SINCE THERE IS A MUCH MATURE PROJECT [django-compressor](http://github.com/mintchaos/django_compressor)*
 # Django Media Lint 0.1.8
 
 Agile-friendly CSS and JS lint checker and compressor for Django
