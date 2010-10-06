@@ -1,2 +1,5 @@
 dummy.db
+*.pycDjango_Media_Lint.egg-info
+dist
 *.pyc
+Django_Media_Lint.egg-info
