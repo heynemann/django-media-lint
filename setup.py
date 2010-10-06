@@ -19,7 +19,7 @@
 from setuptools import setup, find_packages
 from medialint import __version__
 
-setup(name='Django Media Lint',
+setup(name='django-media-lint',
     version=__version__,
     description='CSS and JS lint checker for Django',
     author='Gabriel Falcao',
